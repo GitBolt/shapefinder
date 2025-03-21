@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta charset="UTF-8" />
+    <title>Shape Shift Game</title>
+    <link rel="stylesheet" href="shape-shift.css" />
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>Shape Shift</h1>
+      <div id="game-instructions" class="instructions"></div>
+      
+      <!-- Hub Post Controls -->
+      <div id="hub-controls" class="controls-container" style="display: none;">
+        <h3>Create a new Shape Shift game</h3>
+        <p>Hide a shape in the cloud for others to find!</p>
+        <div class="shape-selector">
+          <button data-shape="circle" class="shape-btn active">Circle</button>
+          <button data-shape="star" class="shape-btn">Star</button>
+          <button data-shape="square" class="shape-btn">Square</button>
+          <button data-shape="triangle" class="shape-btn">Triangle</button>
+        </div>
+        <div class="color-selector">
+          <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;">Red</button>
+          <button data-color="green" class="color-btn" style="background-color: #51cf66;">Green</button>
+          <button data-color="blue" class="color-btn" style="background-color: #339af0;">Blue</button>
+          <button data-color="purple" class="color-btn" style="background-color: #cc5de8;">Purple</button>
+          <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;">Yellow</button>
+        </div>
+        <button id="create-new-game" class="action-btn">Create New Game</button>
+      </div>
+      
+      <!-- Game Creator Controls -->
+      <div id="creator-controls" class="controls-container" style="display: none;">
+        <h3>Hide a shape in the cloud</h3>
+        <div class="shape-selector">
+          <button data-shape="circle" class="shape-btn active">Circle</button>
+          <button data-shape="star" class="shape-btn">Star</button>
+          <button data-shape="square" class="shape-btn">Square</button>
+          <button data-shape="triangle" class="shape-btn">Triangle</button>
+        </div>
+        <div class="color-selector">
+          <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;">Red</button>
+          <button data-color="green" class="color-btn" style="background-color: #51cf66;">Green</button>
+          <button data-color="blue" class="color-btn" style="background-color: #339af0;">Blue</button>
+          <button data-color="purple" class="color-btn" style="background-color: #cc5de8;">Purple</button>
+          <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;">Yellow</button>
+        </div>
+        <button id="submit-hidden-shape" class="action-btn">Post Hidden Shape</button>
+      </div>
+      
+      <div id="guesser-controls" class="controls-container" style="display: none;">
+        <h3>Find the hidden <span id="hidden-shape-name">shape</span>!</h3>
+        <p>Click on the cloud where you think it's hidden. You get one guess!</p>
+        <p id="guess-count">Total guesses: 0</p>
+        <button id="submit-guess" class="action-btn" disabled>Submit Your Guess</button>
+      </div>
+      
+      <div id="results-controls" class="controls-container" style="display: none;">
+        <h3>The hidden <span id="revealed-shape-name">shape</span> is revealed!</h3>
+        <p id="total-guesses">Total guesses: 0</p>
+        <div id="stats-container">
+          <div class="stat">
+            <h4 id="stat-label-1">Closest Guess</h4>
+            <p id="closest-guess">-</p>
+          </div>
+          <div class="stat">
+            <h4 id="stat-label-2">Wildest Miss</h4>
+            <p id="wildest-miss">-</p>
+          </div>
+        </div>
+        <button id="back-to-guessing" class="secondary-btn" style="display: none;">Back to Guessing</button>
+      </div>
+      
+      <div id="notification" class="notification" style="display: none;"></div>
+      
+      <div id="game-canvas-container">
+        <canvas id="shape-cloud" width="400" height="400"></canvas>
+        <canvas id="interaction-layer" width="400" height="400"></canvas>
+        <canvas id="heatmap-layer" width="400" height="400"></canvas>
+      </div>
+    </div>
+    <script type="application/javascript" src="shape-shift.js"></script>
+  </body>
+</html> 
