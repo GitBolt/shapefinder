@@ -8,9 +8,9 @@ Devvit.configure({
   redis: true,
 });
 
-// Add a custom post type for Shape Shift game
+// Add a custom post type for Hidden Shape game
 Devvit.addCustomPostType({
-  name: 'Shape Shift',
+  name: 'Hidden Shape',
   height: 'tall',
   render: (context) => {
     // Load username with `useAsync` hook
@@ -25,13 +25,13 @@ Devvit.addCustomPostType({
     });
 
     // Check if this is a hub post
-    const isHubPost = postTitle === 'Shape Shift Game Hub';
+    const isHubPost = postTitle === 'Hidden Shape Game Hub';
 
     // Only load game data if not a hub post
     const [gameData] = useState<ShapeData | null>(async () => {
       if (isHubPost) return null;
       
-      const hiddenShapeData = await context.redis.get(`shapeshift_data_${context.postId}`);
+      const hiddenShapeData = await context.redis.get(`hiddenshape_data_${context.postId}`);
       return hiddenShapeData ? JSON.parse(hiddenShapeData) : null;
     });
 
@@ -39,7 +39,7 @@ Devvit.addCustomPostType({
     const [isRevealed] = useState<boolean>(async () => {
       if (isHubPost) return false;
       
-      const revealStatus = await context.redis.get(`shapeshift_revealed_${context.postId}`);
+      const revealStatus = await context.redis.get(`hiddenshape_revealed_${context.postId}`);
       return Boolean(revealStatus);
     });
 
@@ -47,7 +47,7 @@ Devvit.addCustomPostType({
     const [guessCount] = useState<number>(async () => {
       if (isHubPost) return 0;
       
-      const countStr = await context.redis.get(`shapeshift_guesscount_${context.postId}`);
+      const countStr = await context.redis.get(`hiddenshape_guesscount_${context.postId}`);
       return Number(countStr ?? 0);
     });
     
@@ -56,14 +56,14 @@ Devvit.addCustomPostType({
       if (isHubPost) return [];
       
       // Try to get the guesses from Redis
-      const guessesJson = await context.redis.get(`shapeshift_allguesses_${context.postId}`);
+      const guessesJson = await context.redis.get(`hiddenshape_allguesses_${context.postId}`);
       return guessesJson ? JSON.parse(guessesJson) : [];
     });
 
     // Setup the web view with message handlers
     const webView = useWebView<WebViewMessage, DevvitMessage>({
       // URL of your web view content
-      url: 'shape-shift.html',
+      url: 'index.html',
 
       // Handle messages sent from the web view
       async onMessage(message, webView) {
@@ -93,11 +93,11 @@ Devvit.addCustomPostType({
             
             // Create a new post for this game
             const gamePost = await context.reddit.submitPost({
-              title: `Shape Shift Game - ${new Date().toLocaleString()}`,
+              title: `Hidden Shape Game - ${new Date().toLocaleString()}`,
               subredditName: await (await context.reddit.getCurrentSubreddit()).name,
               preview: (
                 <vstack height="100%" width="100%" alignment="middle center">
-                  <text size="large">Creating Shape Shift Game...</text>
+                  <text size="large">Creating Hidden Shape Game...</text>
                 </vstack>
               ),
             });
@@ -110,7 +110,7 @@ Devvit.addCustomPostType({
             
             // Store shape data in Redis
             await context.redis.set(
-              `shapeshift_data_${gamePost.id}`,
+              `hiddenshape_data_${gamePost.id}`,
               JSON.stringify(shapeData)
             );
             
@@ -119,12 +119,12 @@ Devvit.addCustomPostType({
               type: 'gameCreated',
               data: {
                 postId: gamePost.id,
-                message: 'New Shape Shift game created!'
+                message: 'New Hidden Shape game created!'
               }
             });
             
             // Navigate the user to the new post
-            context.ui.showToast({ text: 'Shape Shift game created!' });
+            context.ui.showToast({ text: 'Hidden Shape game created!' });
             context.ui.navigateTo(gamePost);
             break;
             
@@ -132,7 +132,7 @@ Devvit.addCustomPostType({
             // This is used for editing an existing game's shape data
             // Creator is saving the hidden shape coordinates and data
             await context.redis.set(
-              `shapeshift_data_${context.postId}`,
+              `hiddenshape_data_${context.postId}`,
               JSON.stringify(message.data)
             );
             context.ui.showToast({ text: 'Shape hidden successfully!' });
@@ -140,7 +140,7 @@ Devvit.addCustomPostType({
             
           case 'recordGuess':
             // Record a user's guess
-            const userData = await context.redis.get(`shapeshift_user_${context.postId}_${username}`);
+            const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
             
             // Check if user has already guessed
             if (userData) {
@@ -156,14 +156,14 @@ Devvit.addCustomPostType({
 
             // Save user's guess
             await context.redis.set(
-              `shapeshift_user_${context.postId}_${username}`,
+              `hiddenshape_user_${context.postId}_${username}`,
               JSON.stringify(message.data)
             );
             
             // Increment guess count
             const newCount = guessCount + 1;
             await context.redis.set(
-              `shapeshift_guesscount_${context.postId}`,
+              `hiddenshape_guesscount_${context.postId}`,
               newCount.toString()
             );
 
@@ -181,7 +181,7 @@ Devvit.addCustomPostType({
             
             // Save updated guesses list
             await context.redis.set(
-              `shapeshift_allguesses_${context.postId}`,
+              `hiddenshape_allguesses_${context.postId}`,
               JSON.stringify(updatedGuesses)
             );
 
@@ -201,13 +201,13 @@ Devvit.addCustomPostType({
           case 'revealShape':
             // Trigger reveal of the hidden shape and show the heatmap
             await context.redis.set(
-              `shapeshift_revealed_${context.postId}`,
+              `hiddenshape_revealed_${context.postId}`,
               'true'
             );
             
             // Get all guesses for the heatmap
             const allGuessesForHeatmap = await context.redis.get(
-              `shapeshift_allguesses_${context.postId}`
+              `hiddenshape_allguesses_${context.postId}`
             );
             
             const guesses = allGuessesForHeatmap ? JSON.parse(allGuessesForHeatmap) : [];
@@ -227,7 +227,7 @@ Devvit.addCustomPostType({
         }
       },
       onUnmount() {
-        context.ui.showToast({ text: 'Shape Shift closed!' });
+        context.ui.showToast({ text: 'Hidden Shape closed!' });
       },
     });
 
@@ -237,10 +237,10 @@ Devvit.addCustomPostType({
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Shape Shift Hub
+              Hidden Shape Hub
             </text>
             <text size="medium">
-              Welcome to Shape Shift! Create a new game for others to play.
+              Welcome to Hidden Shape! Create a new game for others to play.
             </text>
             <spacer />
             <button onPress={() => webView.mount()}>Create New Game</button>
@@ -250,12 +250,12 @@ Devvit.addCustomPostType({
     }
     // If we're showing a game post that someone else created
     else if (gameData && !isRevealed) {
-      // Render the Shape Shift game in guess mode
+      // Render the Hidden Shape game in guess mode
       return (
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Shape Shift
+              Hidden Shape
             </text>
             <text size="medium">
               Find the hidden shape! One guess per user.
@@ -275,7 +275,7 @@ Devvit.addCustomPostType({
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Shape Shift - Revealed!
+              Hidden Shape - Revealed!
             </text>
             <text size="medium">
               The hidden shape has been revealed! Check out the results.
@@ -295,13 +295,13 @@ Devvit.addCustomPostType({
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Create a Shape Shift
+              Create a Hidden Shape
             </text>
             <text size="medium">
               Hide a shape for others to find!
             </text>
             <spacer />
-            <button onPress={() => webView.mount()}>Create Shape Shift</button>
+            <button onPress={() => webView.mount()}>Create Hidden Shape</button>
           </vstack>
         </vstack>
       );

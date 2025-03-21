@@ -6,17 +6,17 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <meta charset="UTF-8" />
-    <title>Shape Shift Game</title>
-    <link rel="stylesheet" href="shape-shift.css" />
+    <title>Hidden Shape Game</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="game-container">
-      <h1>Shape Shift</h1>
+      <h1>Hidden Shape</h1>
       <div id="game-instructions" class="instructions"></div>
       
       <!-- Hub Post Controls -->
       <div id="hub-controls" class="controls-container" style="display: none;">
-        <h3>Create a new Shape Shift game</h3>
+        <h3>Create a new Hidden Shape game</h3>
         <p>Hide a shape in the cloud for others to find!</p>
         <div class="shape-selector">
           <button data-shape="circle" class="shape-btn active">Circle</button>
@@ -84,6 +84,6 @@
         <canvas id="heatmap-layer" width="400" height="400"></canvas>
       </div>
     </div>
-    <script type="application/javascript" src="shape-shift.js"></script>
+    <script type="module" src="js/index.js"></script>
   </body>
 </html> 
