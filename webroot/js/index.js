@@ -17,11 +17,27 @@ class HiddenShapeGame {
     this.isRevealed = false;
     this.allGuesses = [];
     this.userClick = null;
+    this.canvasConfig = null; // For storing the background shapes configuration
     
     // DOM elements
     this.shapeCloudCanvas = document.getElementById('shape-cloud');
     this.interactionLayer = document.getElementById('interaction-layer'); 
     this.heatmapLayer = document.getElementById('heatmap-layer');
+    
+    console.log('Canvas elements found:', 
+      !!this.shapeCloudCanvas, 
+      !!this.interactionLayer, 
+      !!this.heatmapLayer
+    );
+    
+    // Check canvas dimensions
+    if (this.shapeCloudCanvas) {
+      console.log('Shape cloud canvas dimensions:', 
+        this.shapeCloudCanvas.width, 
+        this.shapeCloudCanvas.height
+      );
+    }
+    
     this.gameInstructions = document.getElementById('game-instructions');
     this.hubControls = document.getElementById('hub-controls');
     this.creatorControls = document.getElementById('creator-controls');
@@ -37,6 +53,9 @@ class HiddenShapeGame {
     this.notificationElement = document.getElementById('notification');
     this.closestGuessDisplay = document.getElementById('closest-guess');
     this.wildestMissDisplay = document.getElementById('wildest-miss');
+    this.regenerateShapesBtn = document.getElementById('regenerate-shapes');
+    this.selectedShapeText = document.getElementById('selected-shape');
+    this.selectedColorText = document.getElementById('selected-color');
     
     // Initialize components
     this.renderer = new Renderer({
@@ -57,13 +76,18 @@ class HiddenShapeGame {
       hiddenShapeName: this.hiddenShapeName,
       guessCountDisplay: this.guessCountDisplay,
       revealedShapeName: this.revealedShapeName,
-      totalGuessesDisplay: this.totalGuessesDisplay
+      totalGuessesDisplay: this.totalGuessesDisplay,
+      selectedShapeText: this.selectedShapeText,
+      selectedColorText: this.selectedColorText
     });
     
     this.eventHandlers = new EventHandlers(this, this.renderer);
     
-    // Draw the shape cloud
-    this.renderer.drawShapeCloud();
+    // Draw clean canvas - don't auto-generate shapes
+    const ctx = this.shapeCloudCanvas.getContext('2d');
+    ctx.clearRect(0, 0, this.shapeCloudCanvas.width, this.shapeCloudCanvas.height);
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, this.shapeCloudCanvas.width, this.shapeCloudCanvas.height);
     
     // Set up event listeners
     this.eventHandlers.setupEventListeners();
@@ -79,32 +103,89 @@ class HiddenShapeGame {
     this.postId = data.postId;
     this.isRevealed = data.isRevealed;
     
+    // Handle Where's Waldo canvas configuration if available
+    if (data.canvasConfig) {
+      this.canvasConfig = data.canvasConfig;
+      
+      // Make sure the target shape is properly set in the canvas config
+      if (data.gameData) {
+        // Ensure the targetShape is set to the actual hidden shape
+        this.canvasConfig.targetShape = {
+          shapeType: data.gameData.shapeType,
+          color: data.gameData.color,
+          x: data.gameData.x,
+          y: data.gameData.y,
+          opacity: data.gameData.opacity || 0.85
+        };
+      }
+      
+      this.renderer.setCanvasConfig(this.canvasConfig);
+    } else if (!data.isHub) {
+      // If we're not in hub mode and don't have canvas config, create one
+      // We only auto-generate in guesser/results mode, not in creator or hub
+      if (data.gameData) {
+        const targetShape = {
+          shapeType: data.gameData.shapeType,
+          color: data.gameData.color,
+          x: data.gameData.x,
+          y: data.gameData.y
+        };
+        
+        this.canvasConfig = this.renderer.generateRandomShapesCanvas(
+          this.shapeCloudCanvas.width,
+          this.shapeCloudCanvas.height,
+          targetShape
+        );
+        
+        this.renderer.setCanvasConfig(this.canvasConfig);
+      }
+    }
+    
     if (data.isHub) {
       this.gameMode = 'hub';
+      this.renderer.gameMode = 'hub'; // Set renderer's game mode
       this.gameModes.showHubMode();
+      
+      // For the hub, we should display the random shapes right away
+      if (this.selectedShapeText) {
+        this.selectedShapeText.textContent = this.selectedShape.charAt(0).toUpperCase() + this.selectedShape.slice(1);
+      }
+      if (this.selectedColorText) {
+        this.selectedColorText.textContent = this.selectedColor.charAt(0).toUpperCase() + this.selectedColor.slice(1);
+      }
     } else if (data.gameData) {
       this.hiddenShape = data.gameData;
       this.guessCount = data.guessCount;
       
       if (this.isRevealed) {
         this.gameMode = 'results';
-        this.gameModes.showResultsMode(this.hiddenShape, this.guessCount);
-        this.renderer.drawHiddenShape(
-          this.hiddenShape.x, 
-          this.hiddenShape.y, 
-          this.gameMode, 
-          this.selectedShape, 
-          this.selectedColor, 
-          this.hiddenShape, 
-          true
-        );
+        this.renderer.gameMode = 'results'; // Set renderer's game mode
+        this.gameModes.showWaldoResultsMode(this.hiddenShape, this.guessCount);
       } else {
         this.gameMode = 'guesser';
-        this.gameModes.showGuesserMode(this.hiddenShape, this.guessCount);
+        this.renderer.gameMode = 'guesser'; // Set renderer's game mode
+        this.gameModes.showWaldoGuesserMode(this.hiddenShape, this.guessCount);
       }
+      
+      // Ensure the renderer re-renders with the correct target shape
+      this.renderer.renderWaldoStyleCanvas();
     } else {
       this.gameMode = 'creator';
+      this.renderer.gameMode = 'creator'; // Set renderer's game mode
       this.gameModes.showCreatorMode();
+      
+      // Initialize the selected shape and color text
+      if (this.selectedShapeText) {
+        this.selectedShapeText.textContent = this.selectedShape.charAt(0).toUpperCase() + this.selectedShape.slice(1);
+      }
+      if (this.selectedColorText) {
+        this.selectedColorText.textContent = this.selectedColor.charAt(0).toUpperCase() + this.selectedColor.slice(1);
+      }
+    }
+    
+    // Make sure the canvas is re-rendered with the correct mode
+    if (this.canvasConfig) {
+      this.renderer.renderWaldoStyleCanvas();
     }
   }
   
@@ -122,7 +203,14 @@ class HiddenShapeGame {
               this.hiddenShape = message.data.gameData;
               this.allGuesses = message.data.guesses;
               this.gameMode = 'personal-results';
-              this.gameModes.showPersonalResultsMode(this.hiddenShape, this.guessCount);
+              this.renderer.gameMode = 'personal-results'; // Update the renderer's game mode
+              
+              // Add the isCorrect status to the user's guess
+              this.userGuess.isCorrect = message.data.isCorrect;
+              
+              this.gameModes.showPersonalResultsMode(this.hiddenShape, this.guessCount, message.data.isCorrect);
+              
+              // For personal results, show the user's guess vs target
               this.renderer.drawHiddenShape(
                 this.hiddenShape.x, 
                 this.hiddenShape.y, 
@@ -145,7 +233,10 @@ class HiddenShapeGame {
           this.isRevealed = message.data.isRevealed;
           this.allGuesses = message.data.guesses;
           this.gameMode = 'results';
-          this.gameModes.showResultsMode(this.hiddenShape, this.guessCount);
+          this.renderer.gameMode = 'results'; // Update the renderer's game mode
+          this.gameModes.showWaldoResultsMode(this.hiddenShape, this.guessCount);
+          
+          // Draw the revealed target
           this.renderer.drawHiddenShape(
             this.hiddenShape.x, 
             this.hiddenShape.y, 

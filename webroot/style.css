@@ -78,6 +78,8 @@ p {
   max-width: 400px;
   height: 400px;
   margin: 0 auto;
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
 #shape-cloud,
@@ -86,24 +88,28 @@ p {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   border-radius: var(--border-radius);
-  background-color: var(--canvas-bg);
-  box-shadow: var(--shadow);
 }
 
 #shape-cloud {
   z-index: 1;
+  background-color: var(--canvas-bg);
+  box-shadow: var(--shadow);
 }
 
 #interaction-layer {
-  z-index: 2;
+  z-index: 3;
   cursor: pointer;
+  background-color: transparent;
 }
 
 #heatmap-layer {
-  z-index: 3;
+  z-index: 2;
   opacity: 0.7;
   pointer-events: none;
+  background-color: transparent;
 }
 
 .shape-selector,

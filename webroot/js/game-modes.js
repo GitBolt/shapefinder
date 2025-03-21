@@ -1,3 +1,5 @@
+import { getColorValue } from './utils.js';
+
 export class GameModes {
   constructor(elements) {
     this.gameInstructions = elements.gameInstructions;
@@ -12,10 +14,12 @@ export class GameModes {
     this.guessCountDisplay = elements.guessCountDisplay;
     this.revealedShapeName = elements.revealedShapeName;
     this.totalGuessesDisplay = elements.totalGuessesDisplay;
+    this.selectedShapeText = elements.selectedShapeText;
+    this.selectedColorText = elements.selectedColorText;
   }
   
   showHubMode() {
-    this.gameInstructions.textContent = 'Create a new Hidden Shape game! Pick a shape and color, then place it on the canvas.';
+    this.gameInstructions.textContent = 'Create a new "Where\'s the Shape?" game! First, choose a shape and color, then place it on the canvas. Random background shapes will be generated automatically.';
     
     this.hubControls.style.display = 'flex';
     this.creatorControls.style.display = 'none';
@@ -26,7 +30,7 @@ export class GameModes {
   }
   
   showCreatorMode() {
-    this.gameInstructions.textContent = 'Hide a shape in the cloud! Pick a shape and color, then place it on the canvas.';
+    this.gameInstructions.textContent = 'Hide a shape among many others! First, select a shape and color, then place it on the canvas. Random background shapes will be generated automatically.';
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'flex';
@@ -49,6 +53,24 @@ export class GameModes {
     this.guessCountDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
+  showWaldoGuesserMode(hiddenShape, guessCount) {
+    const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
+    const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
+    
+    this.gameInstructions.textContent = `Find the hidden ${colorName} ${shapeName} among the other shapes! Click on it when you find it.`;
+    
+    this.hubControls.style.display = 'none';
+    this.creatorControls.style.display = 'none';
+    this.guesserControls.style.display = 'flex';
+    this.resultsControls.style.display = 'none';
+    
+    this.hiddenShapeName.textContent = `${colorName} ${shapeName}`;
+    this.hiddenShapeName.style.fontWeight = 'bold';
+    this.hiddenShapeName.style.color = getColorValue(hiddenShape.color);
+    this.submitGuessBtn.disabled = true;
+    this.guessCountDisplay.textContent = `Total guesses: ${guessCount}`;
+  }
+  
   showResultsMode(hiddenShape, guessCount) {
     this.gameInstructions.textContent = 'The hidden shape has been revealed! Check out how everyone did.';
     
@@ -61,15 +83,41 @@ export class GameModes {
     this.totalGuessesDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
-  showPersonalResultsMode(hiddenShape, guessCount) {
-    this.gameInstructions.textContent = 'Here\'s how your guess compares to the hidden shape!';
+  showWaldoResultsMode(hiddenShape, guessCount) {
+    const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
+    const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
+    
+    this.gameInstructions.textContent = `The hidden ${colorName} ${shapeName} has been revealed! See how everyone did at finding it.`;
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'none';
     this.guesserControls.style.display = 'none';
     this.resultsControls.style.display = 'flex';
     
-    this.revealedShapeName.textContent = hiddenShape.shapeType;
+    this.revealedShapeName.textContent = `${colorName} ${shapeName}`;
+    this.revealedShapeName.style.fontWeight = 'bold';
+    this.revealedShapeName.style.color = getColorValue(hiddenShape.color);
+    this.totalGuessesDisplay.textContent = `Total guesses: ${guessCount}`;
+  }
+  
+  showPersonalResultsMode(hiddenShape, guessCount, isCorrect = false) {
+    const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
+    const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
+    
+    const resultText = isCorrect
+      ? `You found the ${colorName} ${shapeName}! Here's how your guess compares to the hidden shape!`
+      : `Not quite! Here's where the ${colorName} ${shapeName} was actually hidden.`;
+    
+    this.gameInstructions.textContent = resultText;
+    
+    this.hubControls.style.display = 'none';
+    this.creatorControls.style.display = 'none';
+    this.guesserControls.style.display = 'none';
+    this.resultsControls.style.display = 'flex';
+    
+    this.revealedShapeName.textContent = `${colorName} ${shapeName}`;
+    this.revealedShapeName.style.fontWeight = 'bold';
+    this.revealedShapeName.style.color = getColorValue(hiddenShape.color);
     this.totalGuessesDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
@@ -98,7 +146,23 @@ export class GameModes {
       guessesWithDistance[0]
     );
     
+    const correctGuesses = guessesWithDistance.filter(guess => guess.isCorrect).length;
+    const correctPercentage = allGuesses.length > 0 
+      ? Math.round((correctGuesses / allGuesses.length) * 100) 
+      : 0;
+    
     closestGuessDisplay.textContent = `${closestGuess.username} (${Math.round(closestGuess.distance)}px)`;
     wildestMissDisplay.textContent = `${wildestMiss.username} (${Math.round(wildestMiss.distance)}px)`;
+    
+    const correctGuessesEl = document.getElementById('correct-guesses');
+    const correctPercentageEl = document.getElementById('correct-percentage');
+    
+    if (correctGuessesEl) {
+      correctGuessesEl.textContent = `${correctGuesses}`;
+    }
+    
+    if (correctPercentageEl) {
+      correctPercentageEl.textContent = `${correctPercentage}%`;
+    }
   }
 } 

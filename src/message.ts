@@ -5,6 +5,26 @@ export type ShapeData = {
   x: number;
   y: number;
   postId: string;
+  opacity?: number;
+};
+
+// Background shape for creating the crowded canvas
+export type BackgroundShape = {
+  shapeType: string;
+  color: string;
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  layer: number;
+};
+
+// Canvas configuration for the Where's Waldo style game
+export type CanvasConfig = {
+  width: number;
+  height: number;
+  backgroundShapes: BackgroundShape[];
+  targetShape: ShapeData;
 };
 
 // Guess data definition
@@ -19,6 +39,7 @@ export type HeatmapGuessData = {
   x: number;
   y: number;
   timestamp: number;
+  isCorrect?: boolean;
 };
 
 /** Message from Devvit to the web view. */
@@ -28,10 +49,11 @@ export type DevvitMessage =
       data: { 
         username: string; 
         gameData: ShapeData | null;
+        canvasConfig?: CanvasConfig;
         isRevealed: boolean;
         guessCount: number;
         postId: string;
-        isHub?: boolean;
+        isHub: boolean;
       }
     }
   | { 
@@ -39,6 +61,7 @@ export type DevvitMessage =
       data: { 
         success: boolean; 
         message: string;
+        isCorrect?: boolean;
         // Optional fields for immediate results
         showResults?: boolean;
         gameData?: ShapeData | null;
@@ -63,7 +86,7 @@ export type DevvitMessage =
 /** Message from the web view to Devvit. */
 export type WebViewMessage =
   | { type: 'webViewReady' }
-  | { type: 'createGamePost'; data: ShapeData }
+  | { type: 'createGamePost'; data: ShapeData; canvasConfig: CanvasConfig }
   | { type: 'recordGuess'; data: GuessData }
   | { type: 'revealShape' };
 

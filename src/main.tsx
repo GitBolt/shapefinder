@@ -1,7 +1,7 @@
 import './createPost.js';
 
 import { Devvit, useState, useWebView } from '@devvit/public-api';
-import type { DevvitMessage, WebViewMessage, ShapeData, GuessData, HeatmapGuessData } from './message.js';
+import type { DevvitMessage, WebViewMessage, ShapeData, GuessData, HeatmapGuessData, CanvasConfig } from './message.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -33,6 +33,21 @@ Devvit.addCustomPostType({
       
       const hiddenShapeData = await context.redis.get(`hiddenshape_data_${context.postId}`);
       return hiddenShapeData ? JSON.parse(hiddenShapeData) : null;
+    });
+
+    // Load canvas configuration for the Where's Waldo style game
+    const [canvasConfig] = useState<CanvasConfig | null>(async () => {
+      if (isHubPost) return null;
+      
+      const canvasConfigData = await context.redis.get(`hiddenshape_canvas_${context.postId}`);
+      if (!canvasConfigData) return null;
+      
+      try {
+        return JSON.parse(canvasConfigData) as CanvasConfig;
+      } catch (e) {
+        console.error('Error parsing canvas config:', e);
+        return null;
+      }
     });
 
     // Track the reveal status (only for game posts, not hub)
@@ -75,6 +90,7 @@ Devvit.addCustomPostType({
               data: {
                 username,
                 gameData,
+                canvasConfig: canvasConfig ?? undefined,
                 isRevealed,
                 guessCount,
                 postId: context.postId ?? '',
@@ -91,9 +107,9 @@ Devvit.addCustomPostType({
               return;
             }
             
-            // Create a new post for this game
+            // Create a new post for this game with a Where's Waldo style title
             const gamePost = await context.reddit.submitPost({
-              title: `Hidden Shape Game - ${new Date().toLocaleString()}`,
+              title: `Find the Hidden ${message.data.shapeType} - ${new Date().toLocaleString()}`,
               subredditName: await (await context.reddit.getCurrentSubreddit()).name,
               preview: (
                 <vstack height="100%" width="100%" alignment="middle center">
@@ -114,6 +130,12 @@ Devvit.addCustomPostType({
               JSON.stringify(shapeData)
             );
             
+            // Store canvas configuration in Redis
+            await context.redis.set(
+              `hiddenshape_canvas_${gamePost.id}`,
+              JSON.stringify(message.canvasConfig)
+            );
+            
             // Initialize guess count for the new post
             await context.redis.set(
               `hiddenshape_guesscount_${gamePost.id}`,
@@ -131,7 +153,7 @@ Devvit.addCustomPostType({
               type: 'gameCreated',
               data: {
                 postId: gamePost.id,
-                message: 'New Hidden Shape game created!'
+                message: 'New Where\'s Waldo style game created!'
               }
             });
             
@@ -161,10 +183,27 @@ Devvit.addCustomPostType({
               return;
             }
 
+            // For Where's Waldo gameplay, we need to check if guess is close to target
+            // We'll consider it correct if within a small distance of the actual shape
+            const guessX = message.data.x;
+            const guessY = message.data.y;
+            
+            const targetX = gameData?.x ?? 0;
+            const targetY = gameData?.y ?? 0;
+            
+            // Calculate distance between guess and target (using Euclidean distance)
+            const distance = Math.sqrt(Math.pow(guessX - targetX, 2) + Math.pow(guessY - targetY, 2));
+            
+            // Consider it correct if within 15 pixels of target center
+            const isCorrect = distance <= 15;
+
             // Save user's guess
             await context.redis.set(
               `hiddenshape_user_${context.postId}_${username}`,
-              JSON.stringify(message.data)
+              JSON.stringify({
+                ...message.data,
+                isCorrect
+              })
             );
             
             // Increment guess count
@@ -179,7 +218,8 @@ Devvit.addCustomPostType({
               username,
               x: message.data.x,
               y: message.data.y,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              isCorrect
             };
             
             // Store guesses as a JSON array in Redis
@@ -197,7 +237,10 @@ Devvit.addCustomPostType({
               type: 'guessResponse',
               data: {
                 success: true,
-                message: 'Your guess has been recorded!',
+                message: isCorrect 
+                  ? 'Congratulations! You found the hidden shape!' 
+                  : 'Your guess has been recorded, but it\'s not correct.',
+                isCorrect,
                 showResults: true,
                 gameData: gameData,
                 guesses: updatedGuesses
@@ -249,10 +292,13 @@ Devvit.addCustomPostType({
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Hidden Shape Hub
+              Where's the Shape? Game Hub
             </text>
             <text size="medium">
-              Welcome to Hidden Shape! Create a new game for others to play.
+              Create a new game by hiding a shape among many others!
+            </text>
+            <text size="small">
+              Players will need to find your hidden shape in a crowd of random shapes.
             </text>
             <spacer />
             <button onPress={() => webView.mount()}>Create New Game</button>
@@ -261,36 +307,39 @@ Devvit.addCustomPostType({
       );
     }
     // If we're showing a game post that someone else created
-    else if (gameData && !isRevealed) {
-      // Render the Hidden Shape game in guess mode
+    else if (gameData && canvasConfig && !isRevealed) {
+      // Render the Where's Waldo game in find mode
       return (
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Hidden Shape
+              Where's the Shape?
             </text>
             <text size="medium">
-              Find the hidden shape! One guess per user.
+              Find the hidden {gameData.shapeType} in {gameData.color}!
+            </text>
+            <text size="small">
+              Click where you think it is hidden among all the shapes.
             </text>
             <spacer />
             <text size="medium">
               Guesses so far: {guessCount}
             </text>
             <spacer />
-            <button onPress={() => webView.mount()}>Make Your Guess</button>
+            <button onPress={() => webView.mount()}>Find the Shape</button>
           </vstack>
         </vstack>
       );
-    } else if (gameData && isRevealed) {
+    } else if (gameData && canvasConfig && isRevealed) {
       // Render the revealed state
       return (
         <vstack grow padding="small">
           <vstack grow alignment="middle center">
             <text size="xlarge" weight="bold">
-              Hidden Shape - Revealed!
+              Shape Location Revealed!
             </text>
             <text size="medium">
-              The hidden shape has been revealed! Check out the results.
+              The hidden {gameData.shapeType} has been revealed! Check out the results.
             </text>
             <spacer />
             <text size="medium">
@@ -310,7 +359,7 @@ Devvit.addCustomPostType({
               Create a Hidden Shape
             </text>
             <text size="medium">
-              Hide a shape for others to find!
+              Hide a shape among many others for players to find!
             </text>
             <spacer />
             <button onPress={() => webView.mount()}>Create Hidden Shape</button>
