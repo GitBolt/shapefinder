@@ -5,8 +5,7 @@ export function getColorValue(colorName) {
     blue: '#339af0',
     purple: '#cc5de8',
     yellow: '#ffd43b',
-    orange: '#fd7e14',
-    teal: '#20c997'
+    orange: '#fd7e14'
   };
   
   if (!colors[colorName]) {

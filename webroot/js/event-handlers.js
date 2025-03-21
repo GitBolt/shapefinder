@@ -22,9 +22,26 @@ export class EventHandlers {
       btn.addEventListener('click', () => this.selectColor(btn.dataset.color));
     });
     
-    // New button for regenerating the background shapes in creator mode
+    // Sliders for shape size
+    const hubSizeSlider = document.getElementById('hub-shape-size');
+    const creatorSizeSlider = document.getElementById('creator-shape-size');
+    
+    if (hubSizeSlider) {
+      hubSizeSlider.addEventListener('input', this.updateShapeSize.bind(this, 'hub-shape-size-value'));
+    }
+    
+    if (creatorSizeSlider) {
+      creatorSizeSlider.addEventListener('input', this.updateShapeSize.bind(this, 'creator-shape-size-value'));
+    }
+    
+    // Buttons for generating random shapes
     if (this.game.regenerateShapesBtn) {
       this.game.regenerateShapesBtn.addEventListener('click', this.regenerateShapes.bind(this));
+    }
+    
+    const regenerateCreatorBtn = document.getElementById('regenerate-shapes-creator');
+    if (regenerateCreatorBtn) {
+      regenerateCreatorBtn.addEventListener('click', this.regenerateShapes.bind(this));
     }
   }
   
@@ -43,13 +60,13 @@ export class EventHandlers {
         this.game.gameMode, 
         this.game.selectedShape, 
         this.game.selectedColor, 
-        this.game.hiddenShape
+        this.game.hiddenShape,
+        false,
+        this.game.shapeSize
       );
       
-      // Generate background shapes now that we know the target shape
-      // This ensures no duplicates of the exact target shape combination
-      this.generateBackgroundShapes();
-      
+      // Do NOT generate background shapes automatically
+      // Only enable the buttons after placing a shape
       if (this.game.gameMode === 'hub') {
         this.game.createNewGameBtn.disabled = false;
       } else {
@@ -62,6 +79,31 @@ export class EventHandlers {
     }
   }
   
+  updateShapeSize(valueElementId, event) {
+    // Update the displayed value
+    const valueElement = document.getElementById(valueElementId);
+    if (valueElement) {
+      valueElement.textContent = event.target.value;
+    }
+    
+    // Update the game's shape size
+    this.game.shapeSize = parseInt(event.target.value, 10);
+    
+    // If a shape has been placed, redraw it with the new size
+    if (this.game.userClick) {
+      this.renderer.drawHiddenShape(
+        this.game.userClick.x, 
+        this.game.userClick.y, 
+        this.game.gameMode, 
+        this.game.selectedShape, 
+        this.game.selectedColor, 
+        this.game.hiddenShape,
+        false,
+        this.game.shapeSize
+      );
+    }
+  }
+  
   generateBackgroundShapes() {
     // Get the canvas dimensions
     const canvas = this.game.shapeCloudCanvas;
@@ -71,7 +113,8 @@ export class EventHandlers {
       shapeType: this.game.selectedShape,
       color: this.game.selectedColor,
       x: this.game.userClick.x,
-      y: this.game.userClick.y
+      y: this.game.userClick.y,
+      size: this.game.shapeSize
     };
     
     // Generate random shapes avoiding the exact combination of target shape
@@ -91,7 +134,9 @@ export class EventHandlers {
       this.game.gameMode, 
       this.game.selectedShape, 
       this.game.selectedColor, 
-      this.game.hiddenShape
+      this.game.hiddenShape,
+      false,
+      this.game.shapeSize
     );
   }
   
@@ -112,8 +157,7 @@ export class EventHandlers {
       }
     }
     
-    // If the user has already placed a shape, regenerate the background shapes
-    // to avoid having exact duplicates of the new selection
+    // If the user has already placed a shape, redraw it
     if (this.game.userClick) {
       // Update the shape
       this.renderer.drawHiddenShape(
@@ -122,11 +166,10 @@ export class EventHandlers {
         this.game.gameMode, 
         this.game.selectedShape, 
         this.game.selectedColor, 
-        this.game.hiddenShape
+        this.game.hiddenShape,
+        false,
+        this.game.shapeSize
       );
-      
-      // Regenerate background shapes
-      this.generateBackgroundShapes();
     }
   }
   
@@ -147,8 +190,7 @@ export class EventHandlers {
       }
     }
     
-    // If the user has already placed a shape, regenerate the background shapes
-    // to avoid having exact duplicates of the new selection
+    // If the user has already placed a shape, redraw it
     if (this.game.userClick) {
       // Update the shape
       this.renderer.drawHiddenShape(
@@ -157,11 +199,10 @@ export class EventHandlers {
         this.game.gameMode, 
         this.game.selectedShape, 
         this.game.selectedColor, 
-        this.game.hiddenShape
+        this.game.hiddenShape,
+        false,
+        this.game.shapeSize
       );
-      
-      // Regenerate background shapes
-      this.generateBackgroundShapes();
     }
   }
   
@@ -201,7 +242,8 @@ export class EventHandlers {
       x: this.game.userClick.x,
       y: this.game.userClick.y,
       postId: this.game.postId,
-      opacity: 0.85 // Set a decent opacity for the hidden shape
+      opacity: 0.85, // Set a decent opacity for the hidden shape
+      size: this.game.shapeSize // Include the custom size
     };
     
     // Send the message to create the game post
@@ -226,7 +268,8 @@ export class EventHandlers {
       color: this.game.selectedColor,
       x: this.game.userClick.x,
       y: this.game.userClick.y,
-      postId: this.game.postId
+      postId: this.game.postId,
+      size: this.game.shapeSize // Include the custom size
     };
     
     this.game.sendWebViewMessage({

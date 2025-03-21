@@ -12,6 +12,7 @@ class HiddenShapeGame {
     this.guessCount = 0;
     this.selectedShape = 'circle';
     this.selectedColor = 'red';
+    this.shapeSize = 30; // Default size for shapes
     this.hiddenShape = null;
     this.userGuess = null;
     this.isRevealed = false;
@@ -115,7 +116,8 @@ class HiddenShapeGame {
           color: data.gameData.color,
           x: data.gameData.x,
           y: data.gameData.y,
-          opacity: data.gameData.opacity || 0.85
+          opacity: data.gameData.opacity || 0.85,
+          size: data.gameData.size || 30 // Use provided size or default to 30
         };
       }
       
@@ -128,7 +130,8 @@ class HiddenShapeGame {
           shapeType: data.gameData.shapeType,
           color: data.gameData.color,
           x: data.gameData.x,
-          y: data.gameData.y
+          y: data.gameData.y,
+          size: data.gameData.size || 30 // Use provided size or default to 30
         };
         
         this.canvasConfig = this.renderer.generateRandomShapesCanvas(

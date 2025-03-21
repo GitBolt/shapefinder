@@ -20,7 +20,7 @@ export class Renderer {
     
     const backgroundShapes = [];
     const shapeTypes = ['circle', 'square', 'triangle', 'star'];
-    const colors = ['red', 'green', 'blue', 'purple', 'yellow', 'orange', 'teal'];
+    const colors = ['red', 'green', 'blue', 'purple', 'yellow', 'orange'];
     
     // Create shapes for layer 1 (background)
     const layer1Count = Math.floor(Math.random() * 20) + 30; // 30-50 shapes
@@ -197,7 +197,9 @@ export class Renderer {
         
         ctx.globalAlpha = target.opacity || 0.85;
         ctx.fillStyle = getColorValue(target.color);
-        this.drawShape(ctx, target.shapeType, target.x, target.y, 30); // Fixed size for target
+        // Use the target's custom size or default to 30
+        const targetSize = target.size || 30;
+        this.drawShape(ctx, target.shapeType, target.x, target.y, targetSize);
       } else {
         console.log('Not drawing target shape. Mode:', this.gameMode);
       }
@@ -276,11 +278,11 @@ export class Renderer {
     ctx.fill();
   }
   
-  drawHiddenShape(x, y, gameMode, selectedShape, selectedColor, hiddenShape, highlight = false) {
+  drawHiddenShape(x, y, gameMode, selectedShape, selectedColor, hiddenShape, highlight = false, customSize = 30) {
     this.gameMode = gameMode;
     
     const ctx = this.interactionCtx;
-    const size = 30;
+    const size = customSize;
     
     // Only clear the interaction layer, not the shape cloud
     ctx.clearRect(0, 0, this.interactionLayer.width, this.interactionLayer.height);

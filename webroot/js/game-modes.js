@@ -19,7 +19,7 @@ export class GameModes {
   }
   
   showHubMode() {
-    this.gameInstructions.textContent = 'Create a new "Where\'s the Shape?" game! First, choose a shape and color, then place it on the canvas. Random background shapes will be generated automatically.';
+    this.gameInstructions.textContent = 'Create a new "Where\'s the Shape?" game! First, choose a shape, color, and size, then place it on the canvas. Click "Generate Random Shapes" to add background shapes.';
     
     this.hubControls.style.display = 'flex';
     this.creatorControls.style.display = 'none';
@@ -30,7 +30,7 @@ export class GameModes {
   }
   
   showCreatorMode() {
-    this.gameInstructions.textContent = 'Hide a shape among many others! First, select a shape and color, then place it on the canvas. Random background shapes will be generated automatically.';
+    this.gameInstructions.textContent = 'Hide a shape among many others! First, select a shape, color, and size, then place it on the canvas. Click "Generate Random Shapes" to add background shapes.';
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'flex';
