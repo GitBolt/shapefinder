@@ -114,6 +114,18 @@ Devvit.addCustomPostType({
               JSON.stringify(shapeData)
             );
             
+            // Initialize guess count for the new post
+            await context.redis.set(
+              `hiddenshape_guesscount_${gamePost.id}`,
+              "0"
+            );
+            
+            // Initialize empty guesses array for the new post
+            await context.redis.set(
+              `hiddenshape_allguesses_${gamePost.id}`,
+              "[]"
+            );
+            
             // Notify the web view that the game was created
             webView.postMessage({
               type: 'gameCreated',
@@ -128,18 +140,13 @@ Devvit.addCustomPostType({
             context.ui.navigateTo(gamePost);
             break;
             
-          case 'saveHiddenShape':
-            // This is used for editing an existing game's shape data
-            // Creator is saving the hidden shape coordinates and data
-            await context.redis.set(
-              `hiddenshape_data_${context.postId}`,
-              JSON.stringify(message.data)
-            );
-            context.ui.showToast({ text: 'Shape hidden successfully!' });
-            break;
-            
           case 'recordGuess':
-            // Record a user's guess
+            // Record a user's guess in a game post (not the hub)
+            if (isHubPost) {
+              context.ui.showToast({ text: 'Cannot make guesses on the hub post!' });
+              return;
+            }
+            
             const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
             
             // Check if user has already guessed
@@ -200,6 +207,11 @@ Devvit.addCustomPostType({
             
           case 'revealShape':
             // Trigger reveal of the hidden shape and show the heatmap
+            if (isHubPost) {
+              context.ui.showToast({ text: 'Cannot reveal shape on hub post!' });
+              return;
+            }
+            
             await context.redis.set(
               `hiddenshape_revealed_${context.postId}`,
               'true'

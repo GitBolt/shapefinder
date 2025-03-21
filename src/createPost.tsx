@@ -1,14 +1,16 @@
 import { Devvit } from '@devvit/public-api';
+import type { Post } from '@devvit/public-api';
 
 // Add a menu item to create the Hidden Shape game creator hub post
 Devvit.addMenuItem({
   label: 'Create Hidden Shape Hub',
   location: 'subreddit',
+  forUserType: 'moderator',
   onPress: async (_event, context) => {
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
     
-    // Create a new hub post (we'll implement the single hub post logic in main.tsx)
+    // Create a new hub post (we'll check for existing ones in the custom post renderer)
     const post = await reddit.submitPost({
       title: 'Hidden Shape Game Hub',
       subredditName: subreddit.name,
@@ -19,7 +21,15 @@ Devvit.addMenuItem({
         </vstack>
       ),
     });
-    ui.showToast({ text: 'Hidden Shape Hub Created!' });
+    
+    // Sticky the post if possible (requires mod permission)
+    try {
+      await post.sticky();
+      ui.showToast({ text: 'Hidden Shape Hub Created and Stickied!' });
+    } catch (error) {
+      ui.showToast({ text: 'Hidden Shape Hub Created! (Note: Unable to sticky)' });
+    }
+    
     ui.navigateTo(post);
   },
 });

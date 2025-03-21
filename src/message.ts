@@ -63,10 +63,9 @@ export type DevvitMessage =
 /** Message from the web view to Devvit. */
 export type WebViewMessage =
   | { type: 'webViewReady' }
-  | { type: 'saveHiddenShape'; data: ShapeData }
+  | { type: 'createGamePost'; data: ShapeData }
   | { type: 'recordGuess'; data: GuessData }
-  | { type: 'revealShape' }
-  | { type: 'createGamePost'; data: ShapeData };
+  | { type: 'revealShape' };
 
 /**
  * Web view MessageEvent listener data type. The Devvit API wraps all messages
