@@ -26,11 +26,12 @@ body {
 
 .game-container {
   width: 100%;
-  max-width: 500px;
+  max-width: 550px; /* Increased to accommodate side selectors */
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  position: relative; /* Added for positioning of children */
 }
 
 h1 {
@@ -74,12 +75,15 @@ p {
 
 #game-canvas-container {
   position: relative;
-  width: 100%;
-  max-width: 400px;
+  width: 85%; /* Reduced width to make room for selectors */
+  max-width: 360px; /* Reduced from 400px to make room for selectors */
   height: 400px;
   margin: 0 auto;
+  margin-bottom: 60px; /* Reduced from 120px to bring buttons closer */
   border-radius: var(--border-radius);
-  overflow: hidden;
+  overflow: hidden; /* Changed back to hidden */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Added stronger shadow for canvas */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Added subtle border */
 }
 
 #shape-cloud,
@@ -115,9 +119,21 @@ p {
 .shape-selector,
 .color-selector {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
-  justify-content: center;
+  position: absolute;
+  top: 50%; /* Center vertically */
+  transform: translateY(-50%); /* Center vertically */
+  width: 60px;
+  z-index: 5; /* Ensure they're above other elements */
+}
+
+.shape-selector {
+  left: 5px; /* Closer to the canvas */
+}
+
+.color-selector {
+  right: 5px; /* Closer to the canvas */
 }
 
 .shape-btn,
@@ -251,4 +267,43 @@ p {
   width: 80%;
   max-width: 300px;
   cursor: pointer;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  position: absolute;
+  bottom: -50px; /* Reduced from -70px to bring buttons closer to canvas */
+  left: 0;
+  right: 0;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  /* For smaller screens, use a more compact layout */
+  .game-container {
+    max-width: 100%;
+  }
+  
+  .shape-selector,
+  .color-selector {
+    position: static;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+    transform: none;
+  }
+  
+  .action-buttons {
+    position: static;
+    margin-top: 1rem;
+    flex-direction: row; /* Ensure buttons stay in a row */
+  }
+  
+  #game-canvas-container {
+    margin-bottom: 1rem;
+  }
 } 
