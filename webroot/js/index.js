@@ -50,7 +50,6 @@ class HiddenShapeGame {
     this.revealedShapeName = document.getElementById('revealed-shape-name');
     this.submitHiddenShapeBtn = document.getElementById('submit-hidden-shape');
     this.createNewGameBtn = document.getElementById('create-new-game');
-    this.submitGuessBtn = document.getElementById('submit-guess');
     this.notificationElement = document.getElementById('notification');
     this.closestGuessDisplay = document.getElementById('closest-guess');
     this.wildestMissDisplay = document.getElementById('wildest-miss');
@@ -73,7 +72,6 @@ class HiddenShapeGame {
       resultsControls: this.resultsControls,
       createNewGameBtn: this.createNewGameBtn,
       submitHiddenShapeBtn: this.submitHiddenShapeBtn,
-      submitGuessBtn: this.submitGuessBtn,
       hiddenShapeName: this.hiddenShapeName,
       guessCountDisplay: this.guessCountDisplay,
       revealedShapeName: this.revealedShapeName,
@@ -178,6 +176,11 @@ class HiddenShapeGame {
         this.gameMode = 'guesser';
         this.renderer.gameMode = 'guesser'; // Set renderer's game mode
         this.gameModes.showWaldoGuesserMode(this.hiddenShape, this.guessCount);
+        
+        // Start the timer for guessing mode
+        setTimeout(() => {
+          this.eventHandlers.startTimer();
+        }, 500); // Slight delay to ensure UI is ready
       }
       
       // Ensure the renderer re-renders with the correct target shape
@@ -227,6 +230,9 @@ class HiddenShapeGame {
         case 'guessResponse':
           if (message.data.success) {
             if (message.data.showResults) {
+              // Make sure to clear any running timers
+              this.eventHandlers.clearTimer();
+              
               this.hiddenShape = message.data.gameData;
               this.allGuesses = message.data.guesses;
               this.gameMode = 'personal-results';
@@ -253,7 +259,6 @@ class HiddenShapeGame {
             }
           } else {
             this.showNotification(message.data.message);
-            this.submitGuessBtn.disabled = false;
           }
           break;
         case 'revealResults':

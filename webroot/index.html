@@ -25,14 +25,14 @@
           
           <div class="canvas-buttons">
             <button id="regenerate-shapes" class="secondary-btn" style="display: none;">
-              <span>Add Random Shapes</span>
+              <span>Create Background Shapes</span>
             </button>
             <button id="create-new-game" class="action-btn" style="display: none;">
               <span>Create Game</span>
             </button>
             
             <button id="regenerate-shapes-creator" class="secondary-btn" style="display: none;">
-              <span>Add Random Shapes</span>
+              <span>Create Background Shapes</span>
             </button>
             <button id="submit-hidden-shape" class="action-btn" style="display: none;">
               <span>Create Game</span>
@@ -111,9 +111,12 @@
           
           <div id="guesser-controls" class="controls-container" style="display: none;">
             <h3>Find the hidden <span id="hidden-shape-name">shape</span>!</h3>
-            <p>Click on where you think the shape is hidden among all the others. You get one guess!</p>
+            <p>Click on where you think the shape is hidden among all the others. You have 10 seconds to find it!</p>
+            <div class="timer-container">
+              <div id="timer-bar"><div id="timer-progress"></div></div>
+              <div id="timer-text">10</div>
+            </div>
             <p id="guess-count">Total guesses: 0</p>
-            <button id="submit-guess" class="action-btn" disabled>Submit Your Guess</button>
           </div>
           
           <div id="results-controls" class="controls-container" style="display: none;">
@@ -121,20 +124,8 @@
             <p id="total-guesses">Total guesses: 0</p>
             <div id="stats-container">
               <div class="stat">
-                <h4>Correct Guesses</h4>
-                <p id="correct-guesses">0</p>
-              </div>
-              <div class="stat">
                 <h4>Success Rate</h4>
                 <p id="correct-percentage">0%</p>
-              </div>
-              <div class="stat">
-                <h4>Closest Guess</h4>
-                <p id="closest-guess">-</p>
-              </div>
-              <div class="stat">
-                <h4>Wildest Miss</h4>
-                <p id="wildest-miss">-</p>
               </div>
             </div>
             <button id="back-to-guessing" class="secondary-btn" style="display: none;">Back to Guessing</button>

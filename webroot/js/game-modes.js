@@ -9,7 +9,6 @@ export class GameModes {
     this.resultsControls = elements.resultsControls;
     this.createNewGameBtn = elements.createNewGameBtn;
     this.submitHiddenShapeBtn = elements.submitHiddenShapeBtn;
-    this.submitGuessBtn = elements.submitGuessBtn;
     this.hiddenShapeName = elements.hiddenShapeName;
     this.guessCountDisplay = elements.guessCountDisplay;
     this.revealedShapeName = elements.revealedShapeName;
@@ -49,7 +48,6 @@ export class GameModes {
     this.resultsControls.style.display = 'none';
     
     this.hiddenShapeName.textContent = hiddenShape.shapeType;
-    this.submitGuessBtn.disabled = true;
     this.guessCountDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
@@ -57,7 +55,7 @@ export class GameModes {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
-    this.gameInstructions.textContent = `Find the hidden ${colorName} ${shapeName} among the other shapes! Click on it when you find it.`;
+    this.gameInstructions.textContent = `Find the hidden ${colorName} ${shapeName} among the other shapes! You have 10 seconds to find it.`;
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'none';
@@ -67,7 +65,6 @@ export class GameModes {
     this.hiddenShapeName.textContent = `${colorName} ${shapeName}`;
     this.hiddenShapeName.style.fontWeight = 'bold';
     this.hiddenShapeName.style.color = getColorValue(hiddenShape.color);
-    this.submitGuessBtn.disabled = true;
     this.guessCountDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
@@ -123,11 +120,10 @@ export class GameModes {
   
   calculateStats(allGuesses, hiddenShape, closestGuessDisplay, wildestMissDisplay) {
     if (!allGuesses || allGuesses.length === 0) {
-      closestGuessDisplay.textContent = 'No guesses';
-      wildestMissDisplay.textContent = 'No guesses';
       return;
     }
     
+    // Calculate success rate only
     const guessesWithDistance = allGuesses.map(guess => {
       const distance = Math.sqrt(
         Math.pow(guess.x - hiddenShape.x, 2) + 
@@ -136,30 +132,13 @@ export class GameModes {
       return { ...guess, distance };
     });
     
-    const closestGuess = guessesWithDistance.reduce(
-      (closest, current) => current.distance < closest.distance ? current : closest,
-      guessesWithDistance[0]
-    );
-    
-    const wildestMiss = guessesWithDistance.reduce(
-      (wildest, current) => current.distance > wildest.distance ? current : wildest,
-      guessesWithDistance[0]
-    );
-    
     const correctGuesses = guessesWithDistance.filter(guess => guess.isCorrect).length;
     const correctPercentage = allGuesses.length > 0 
       ? Math.round((correctGuesses / allGuesses.length) * 100) 
       : 0;
     
-    closestGuessDisplay.textContent = `${closestGuess.username} (${Math.round(closestGuess.distance)}px)`;
-    wildestMissDisplay.textContent = `${wildestMiss.username} (${Math.round(wildestMiss.distance)}px)`;
-    
-    const correctGuessesEl = document.getElementById('correct-guesses');
+    // Update only the success rate
     const correctPercentageEl = document.getElementById('correct-percentage');
-    
-    if (correctGuessesEl) {
-      correctGuessesEl.textContent = `${correctGuesses}`;
-    }
     
     if (correctPercentageEl) {
       correctPercentageEl.textContent = `${correctPercentage}%`;

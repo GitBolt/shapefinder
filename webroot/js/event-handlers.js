@@ -2,13 +2,14 @@ export class EventHandlers {
   constructor(game, renderer) {
     this.game = game;
     this.renderer = renderer;
+    this.timerInterval = null;
+    this.timeRemaining = 10; // 10 seconds countdown
   }
   
   setupEventListeners() {
     this.game.interactionLayer.addEventListener('click', this.handleCanvasClick.bind(this));
     
     this.game.submitHiddenShapeBtn.addEventListener('click', this.submitHiddenShape.bind(this));
-    this.game.submitGuessBtn.addEventListener('click', this.submitGuess.bind(this));
     
     if (this.game.createNewGameBtn) {
       this.game.createNewGameBtn.addEventListener('click', this.createNewGame.bind(this));
@@ -75,7 +76,9 @@ export class EventHandlers {
     } else if (this.game.gameMode === 'guesser') {
       this.renderer.drawGuess(x, y);
       this.game.userGuess = { x, y };
-      this.game.submitGuessBtn.disabled = false;
+      
+      // Auto-submit the guess when clicked
+      this.submitGuess();
     }
   }
   
@@ -216,12 +219,11 @@ export class EventHandlers {
     // Use the central method to generate background shapes
     this.generateBackgroundShapes();
     
-    this.game.showNotification('Generated new random shapes!');
+    // Notification removed as requested
   }
   
   createNewGame() {
     // We need a position to create a game
-    // If user hasn't clicked, use center of canvas
     const canvas = this.game.shapeCloudCanvas;
     
     if (!this.game.userClick) {
@@ -231,8 +233,9 @@ export class EventHandlers {
     }
     
     if (!this.game.canvasConfig) {
-      // If no background shapes yet, generate them
-      this.generateBackgroundShapes();
+      // If no background shapes yet, notify the user instead of auto-generating
+      this.game.showNotification('Please create background shapes first!');
+      return;
     }
     
     // Create shape data for submission
@@ -258,18 +261,30 @@ export class EventHandlers {
   }
   
   submitHiddenShape() {
+    // We need a position to create a game
+    const canvas = this.game.shapeCloudCanvas;
+    
     if (!this.game.userClick) {
+      // If no shape placed yet, have the user place a shape first
       this.game.showNotification('Please place a shape first!');
       return;
     }
     
+    if (!this.game.canvasConfig) {
+      // If no background shapes yet, notify the user instead of auto-generating
+      this.game.showNotification('Please create background shapes first!');
+      return;
+    }
+    
+    // Create shape data for submission
     const shapeData = {
       shapeType: this.game.selectedShape,
       color: this.game.selectedColor,
       x: this.game.userClick.x,
       y: this.game.userClick.y,
       postId: this.game.postId,
-      size: this.game.shapeSize // Include the custom size
+      opacity: 0.85,
+      size: this.game.shapeSize
     };
     
     this.game.sendWebViewMessage({
@@ -281,18 +296,85 @@ export class EventHandlers {
     this.game.submitHiddenShapeBtn.textContent = 'Saving...';
   }
   
+  startTimer() {
+    // Clear any existing timer
+    this.clearTimer();
+    
+    // Reset time
+    this.timeRemaining = 10;
+    
+    // Get timer elements
+    const timerProgress = document.getElementById('timer-progress');
+    const timerText = document.getElementById('timer-text');
+    
+    if (!timerProgress || !timerText) return;
+    
+    // Set initial state
+    timerProgress.style.width = '100%';
+    timerText.textContent = this.timeRemaining;
+    timerProgress.classList.remove('timer-progress-low');
+    timerText.classList.remove('timer-low');
+    
+    // Start the timer
+    this.timerInterval = setInterval(() => {
+      this.timeRemaining -= 1;
+      
+      // Update UI
+      timerText.textContent = this.timeRemaining;
+      const progressWidth = (this.timeRemaining / 10) * 100;
+      timerProgress.style.width = `${progressWidth}%`;
+      
+      // Add low time warning when 3 seconds or less remain
+      if (this.timeRemaining <= 3) {
+        timerProgress.classList.add('timer-progress-low');
+        timerText.classList.add('timer-low');
+      }
+      
+      // Time's up! Auto-submit if the user hasn't guessed
+      if (this.timeRemaining <= 0) {
+        this.clearTimer();
+        
+        // If user hasn't made a guess yet, create a random one
+        if (!this.game.userGuess) {
+          // Create a random guess position
+          const canvasWidth = this.game.interactionLayer.width;
+          const canvasHeight = this.game.interactionLayer.height;
+          const randomX = Math.floor(Math.random() * canvasWidth);
+          const randomY = Math.floor(Math.random() * canvasHeight);
+          
+          // Draw the random guess
+          this.renderer.drawGuess(randomX, randomY);
+          this.game.userGuess = { x: randomX, y: randomY };
+        }
+        
+        // Auto-submit
+        this.submitGuess();
+      }
+    }, 1000);
+  }
+  
+  clearTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+  
   submitGuess() {
     if (!this.game.userGuess) {
       this.game.showNotification('Please make a guess first!');
       return;
     }
     
+    // Clear the timer when a guess is submitted
+    this.clearTimer();
+    
     this.game.sendWebViewMessage({
       type: 'recordGuess',
       data: this.game.userGuess
     });
     
-    this.game.submitGuessBtn.disabled = true;
-    this.game.submitGuessBtn.textContent = 'Submitting...';
+    // Show a submitting notification
+    this.game.showNotification('Submitting your guess...');
   }
 } 
