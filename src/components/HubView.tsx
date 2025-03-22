@@ -9,36 +9,24 @@ export function HubView({ webView, context }: { webView: any, context: Context }
   const [showingStats, setShowingStats] = useState(false);
   const [showingGuide, setShowingGuide] = useState(false);
   
-  // Fetch actual stats from Redis
+  // Fetch actual stats from Redis using the global counters
   const [gameStats] = useState<{
     totalGames: number;
     totalGuesses: number;
     successRate: number;
   }>(async () => {
     try {
-      // Get all posts created through the hub
-      const gamesListJson = await context.redis.get('hiddenshape_games_list');
-      const gamesList = gamesListJson ? JSON.parse(gamesListJson) : [];
-      const totalGames = gamesList.length;
+      // Get the total games created counter
+      const totalGamesStr = await context.redis.get('hiddenshape_total_games');
+      const totalGames = totalGamesStr ? parseInt(totalGamesStr) : 0;
       
-      // Calculate total guesses by summing across all games
-      let totalGuesses = 0;
-      let totalCorrectGuesses = 0;
+      // Get the total guesses counter
+      const totalGuessesStr = await context.redis.get('hiddenshape_total_guesses');
+      const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
       
-      for (const gameId of gamesList) {
-        // Get guess count for this game
-        const guessCountStr = await context.redis.get(`hiddenshape_guesscount_${gameId}`);
-        const gameGuessCount = Number(guessCountStr || 0);
-        totalGuesses += gameGuessCount;
-        
-        // Get correct guesses for this game
-        const guessesJson = await context.redis.get(`hiddenshape_allguesses_${gameId}`);
-        if (guessesJson) {
-          const guesses = JSON.parse(guessesJson);
-          const correctGuesses = guesses.filter((g: any) => g.isCorrect).length;
-          totalCorrectGuesses += correctGuesses;
-        }
-      }
+      // Get the total correct guesses for calculating success rate
+      const totalCorrectGuessesStr = await context.redis.get('hiddenshape_total_correct_guesses');
+      const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
       
       // Calculate success rate
       const successRate = totalGuesses > 0 
@@ -46,9 +34,9 @@ export function HubView({ webView, context }: { webView: any, context: Context }
         : 0;
       
       return {
-        totalGames: totalGames || 0,
-        totalGuesses: totalGuesses || 0,
-        successRate: successRate || 0
+        totalGames,
+        totalGuesses,
+        successRate
       };
     } catch (error) {
       console.error('Error fetching game stats:', error);

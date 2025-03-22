@@ -109,6 +109,17 @@ export async function handleWebViewMessage(
         "[]"
       );
       
+      // ADDITION: Track this game in the global games list
+      const gamesListJson = await context.redis.get('hiddenshape_games_list');
+      const gamesList = gamesListJson ? JSON.parse(gamesListJson) : [];
+      gamesList.push(gamePost.id);
+      await context.redis.set('hiddenshape_games_list', JSON.stringify(gamesList));
+      
+      // ADDITION: Increment total game count
+      const totalGamesStr = await context.redis.get('hiddenshape_total_games');
+      const totalGames = totalGamesStr ? parseInt(totalGamesStr) : 0;
+      await context.redis.set('hiddenshape_total_games', (totalGames + 1).toString());
+      
       // Notify the web view that the game was created
       webView.postMessage({
         type: 'gameCreated',
@@ -173,6 +184,18 @@ export async function handleWebViewMessage(
         `hiddenshape_guesscount_${state.postId}`,
         newCount.toString()
       );
+
+      // ADDITION: Increment total guesses count globally
+      const totalGuessesStr = await context.redis.get('hiddenshape_total_guesses');
+      const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
+      await context.redis.set('hiddenshape_total_guesses', (totalGuesses + 1).toString());
+      
+      // ADDITION: Increment total correct guesses if this guess was correct
+      if (isCorrect) {
+        const totalCorrectGuessesStr = await context.redis.get('hiddenshape_total_correct_guesses');
+        const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
+        await context.redis.set('hiddenshape_total_correct_guesses', (totalCorrectGuesses + 1).toString());
+      }
 
       // Add user's guess to the list of all guesses for the heatmap
       const newGuess: HeatmapGuessData = {
