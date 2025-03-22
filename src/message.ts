@@ -54,6 +54,12 @@ export type DevvitMessage =
         guessCount: number;
         postId: string;
         isHub: boolean;
+        userGuess?: GuessData;
+        stats?: {
+          correctGuesses: number;
+          totalGuesses: number;
+          successRate: number;
+        };
       }
     }
   | { 
@@ -66,6 +72,7 @@ export type DevvitMessage =
         showResults?: boolean;
         gameData?: ShapeData | null;
         guesses?: HeatmapGuessData[];
+        userGuess?: GuessData;
       } 
     }
   | {
@@ -73,6 +80,12 @@ export type DevvitMessage =
       data: {
         isRevealed: boolean;
         guesses: HeatmapGuessData[];
+        stats?: {
+          correctGuesses: number;
+          totalGuesses: number;
+          successRate: number;
+        };
+        userGuess?: GuessData;
       }
     }
   | {

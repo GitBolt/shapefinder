@@ -84,6 +84,24 @@ Devvit.addCustomPostType({
       async onMessage(message, webView) {
         switch (message.type) {
           case 'webViewReady':
+            // Get user's previous guess if available
+            const userGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+            const userGuess = userGuessData ? JSON.parse(userGuessData) : null;
+            
+            // Calculate game stats if available
+            let stats = undefined;
+            if (!isHubPost && guessCount > 0) {
+              const guessesJson = await context.redis.get(`hiddenshape_allguesses_${context.postId}`);
+              const allGuesses = guessesJson ? JSON.parse(guessesJson) : [];
+              const correctGuesses = allGuesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
+              
+              stats = {
+                correctGuesses,
+                totalGuesses: guessCount,
+                successRate: Math.round((correctGuesses / guessCount) * 100)
+              };
+            }
+            
             // Send initial data to the web view
             webView.postMessage({
               type: 'initialData',
@@ -95,6 +113,8 @@ Devvit.addCustomPostType({
                 guessCount,
                 postId: context.postId ?? '',
                 isHub: isHubPost,
+                userGuess: userGuess?.x !== undefined ? userGuess : undefined,
+                stats
               },
             });
             break;
@@ -169,10 +189,10 @@ Devvit.addCustomPostType({
               return;
             }
             
-            const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+            const existingUserData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
             
             // Check if user has already guessed
-            if (userData) {
+            if (existingUserData) {
               webView.postMessage({
                 type: 'guessResponse',
                 data: {
@@ -267,11 +287,29 @@ Devvit.addCustomPostType({
             
             const guesses = allGuessesForHeatmap ? JSON.parse(allGuessesForHeatmap) : [];
             
+            // Get user's own guess if available
+            const userOwnGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+            const userOwnGuess = userOwnGuessData ? JSON.parse(userOwnGuessData) : null;
+            
+            // Calculate game stats
+            let revealStats = undefined;
+            if (guessCount > 0) {
+              const correctGuesses = guesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
+              
+              revealStats = {
+                correctGuesses,
+                totalGuesses: guessCount,
+                successRate: Math.round((correctGuesses / guessCount) * 100)
+              };
+            }
+            
             webView.postMessage({
               type: 'revealResults',
               data: {
                 isRevealed: true,
-                guesses
+                guesses,
+                stats: revealStats,
+                userGuess: userOwnGuess
               }
             });
             break;
@@ -289,80 +327,302 @@ Devvit.addCustomPostType({
     // If this is a hub post for creating games
     if (isHubPost) {
       return (
-        <vstack grow padding="small">
+        <vstack grow padding="large" cornerRadius="large" backgroundColor="#f7f9fc">
           <vstack grow alignment="middle center">
-            <text size="xlarge" weight="bold">
-              Where's the Shape? Game Hub
+            <image 
+              url="https://i.imgur.com/wqtUCyq.png"
+              imageWidth={300}
+              imageHeight={100}
+            />
+            <text size="xxlarge" weight="bold" color="#1a1a2e">
+              Where's the Shape?
             </text>
-            <text size="medium">
-              Create a new game by hiding a shape among many others!
+            <text size="medium" color="#455a64">
+              A fun game of finding hidden shapes among many others
             </text>
-            <text size="small">
-              Players will need to find your hidden shape in a crowd of random shapes.
+            <spacer size="large" />
+            <hstack gap="medium">
+              <button 
+                appearance="primary"
+                onPress={() => webView.mount()}
+              >
+                Create Game
+              </button>
+              <button 
+                appearance="secondary"
+                onPress={() => context.ui.showToast({ text: 'Coming soon: Game History!' })}
+              >
+                Game Stats
+              </button>
+            </hstack>
+            <spacer size="medium" />
+            <text size="small" color="#78909c">
+              Create a new game by hiding a shape among many others, then share it with friends!
             </text>
-            <spacer />
-            <button onPress={() => webView.mount()}>Create New Game</button>
           </vstack>
         </vstack>
       );
     }
     // If we're showing a game post that someone else created
-    else if (gameData && canvasConfig && !isRevealed) {
-      // Render the Where's Waldo game in find mode
-      return (
-        <vstack grow padding="small">
-          <vstack grow alignment="middle center">
-            <text size="xlarge" weight="bold">
-              Where's the Shape?
-            </text>
-            <text size="medium">
-              Find the hidden {gameData.shapeType} in {gameData.color}!
-            </text>
-            <text size="small">
-              Click where you think it is hidden among all the shapes.
-            </text>
-            <spacer />
-            <text size="medium">
-              Guesses so far: {guessCount}
-            </text>
-            <spacer />
-            <button onPress={() => webView.mount()}>Find the Shape</button>
+    else if (gameData && canvasConfig) {
+      // Check if the user has already played
+      const [userGuess] = useState<GuessData | null>(async () => {
+        const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+        return userData ? JSON.parse(userData) : null;
+      });
+      
+      // Calculate stats
+      const [stats] = useState<{correctGuesses: number, totalGuesses: number}>(async () => {
+        if (guessCount === 0) return { correctGuesses: 0, totalGuesses: 0 };
+        
+        const guessesJson = await context.redis.get(`hiddenshape_allguesses_${context.postId}`);
+        const guesses = guessesJson ? JSON.parse(guessesJson) : [];
+        const correctGuesses = guesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
+        
+        return {
+          correctGuesses,
+          totalGuesses: guessCount
+        };
+      });
+      
+      // Calculate success percentage (avoid division by zero)
+      const successRate = stats.totalGuesses > 0 
+        ? Math.round((stats.correctGuesses / stats.totalGuesses) * 100) 
+        : 0;
+      
+      // For revealed games (ended games)
+      if (isRevealed) {
+        return (
+          <vstack grow padding="large" cornerRadius="large" backgroundColor="#f7f9fc">
+            <vstack grow alignment="middle center">
+              <text size="xxlarge" weight="bold" color="#1a1a2e">
+                Game Complete!
+              </text>
+              <text size="medium" color="#455a64">
+                The hidden {gameData.shapeType} has been revealed
+              </text>
+              
+              <spacer size="medium" />
+              
+              <hstack gap="large" alignment="center middle">
+                <vstack backgroundColor="#e3f2fd" padding="medium" cornerRadius="medium" width="45%">
+                  <text size="large" weight="bold" color="#0d47a1">
+                    {guessCount}
+                  </text>
+                  <text size="small" color="#455a64">Total Guesses</text>
+                </vstack>
+                
+                <vstack backgroundColor="#e8f5e9" padding="medium" cornerRadius="medium" width="45%">
+                  <text size="large" weight="bold" color="#2e7d32">
+                    {successRate}%
+                  </text>
+                  <text size="small" color="#455a64">Success Rate</text>
+                </vstack>
+              </hstack>
+              
+              <spacer size="medium" />
+              
+              {userGuess && (
+                <vstack backgroundColor="#fff8e1" padding="small" cornerRadius="medium" width="85%">
+                  <text weight="bold" color="#ed6c02">Your Guess</text>
+                  <text size="small" weight="bold" color={(userGuess as any).isCorrect ? "#2e7d32" : "#c62828"}>
+                    Result: {(userGuess as any).isCorrect ? "Correct! 🎉" : "Incorrect ❌"}
+                  </text>
+                </vstack>
+              )}
+              
+              <spacer size="medium" />
+              
+              <vstack backgroundColor="#f5f5f5" padding="small" cornerRadius="medium" width="85%">
+                <text weight="bold" color="#1a1a2e">Game Results</text>
+                <spacer size="xsmall" />
+                
+                {/* Simple visual representation of guess vs target with all guesses */}
+                <hstack width="100%" height="200px" backgroundColor="#ffffff" cornerRadius="small">
+                  <zstack width="100%" height="100%" alignment="middle center">
+                    {/* Coordinate axes for reference */}
+                    <hstack width="80%" height="1px" backgroundColor="#e0e0e0" alignment="middle center" />
+                    <vstack width="1px" height="80%" backgroundColor="#e0e0e0" alignment="middle center" />
+                    
+                    {/* Target position marker */}
+                    <hstack width="100%" height="100%">
+                      <spacer 
+                        width={`${Math.max(0, Math.min(100, (gameData.x / canvasConfig.width) * 100))}%`} 
+                        height={`${Math.max(0, Math.min(100, (gameData.y / canvasConfig.height) * 100))}%`}
+                      />
+                      <vstack width="20px" height="20px" backgroundColor="#2e7d32" cornerRadius="full" />
+                      <spacer grow />
+                    </hstack>
+                    
+                    {/* User guess position marker (if user has guessed) */}
+                    {userGuess && (
+                      <hstack width="100%" height="100%">
+                        <spacer 
+                          width={`${Math.max(0, Math.min(100, (userGuess.x / canvasConfig.width) * 100))}%`} 
+                          height={`${Math.max(0, Math.min(100, (userGuess.y / canvasConfig.height) * 100))}%`}
+                        />
+                        <vstack width="20px" height="20px" backgroundColor="#c62828" cornerRadius="full" />
+                        <spacer grow />
+                      </hstack>
+                    )}
+                  </zstack>
+                </hstack>
+                
+                <spacer size="small" />
+                <hstack gap="medium" alignment="middle center">
+                  <vstack alignment="middle center">
+                    <vstack width="14px" height="14px" backgroundColor="#2e7d32" cornerRadius="full" />
+                    <text size="xsmall">Target</text>
+                  </vstack>
+                  {userGuess && (
+                    <vstack alignment="middle center">
+                      <vstack width="14px" height="14px" backgroundColor="#c62828" cornerRadius="full" />
+                      <text size="xsmall">Your Guess</text>
+                    </vstack>
+                  )}
+                </hstack>
+              </vstack>
+              
+              <spacer size="small" />
+              
+              <button 
+                appearance="primary"
+                onPress={() => webView.mount()}
+                icon="search"
+              >
+                View All Guesses
+              </button>
+            </vstack>
           </vstack>
-        </vstack>
-      );
-    } else if (gameData && canvasConfig && isRevealed) {
-      // Render the revealed state
-      return (
-        <vstack grow padding="small">
-          <vstack grow alignment="middle center">
-            <text size="xlarge" weight="bold">
-              Shape Location Revealed!
-            </text>
-            <text size="medium">
-              The hidden {gameData.shapeType} has been revealed! Check out the results.
-            </text>
-            <spacer />
-            <text size="medium">
-              Total guesses: {guessCount}
-            </text>
-            <spacer />
-            <button onPress={() => webView.mount()}>View Results</button>
+        );
+      } 
+      // For active games
+      else {
+        // Get user's own guess data
+        const [userGuessResult] = useState<{isCorrect?: boolean}>(async () => {
+          if (!userGuess) return {};
+          
+          const userGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+          return userGuessData ? JSON.parse(userGuessData) : {};
+        });
+        
+        return (
+          <vstack grow padding="large" cornerRadius="large" backgroundColor="#f7f9fc">
+            <vstack grow alignment="middle center">
+              <hstack gap="large" alignment="center middle">
+                <vstack backgroundColor="#e3f2fd" padding="medium" cornerRadius="medium" width="45%">
+                  <text size="large" weight="bold" color="#0d47a1">
+                    {guessCount}
+                  </text>
+                  <text size="small" color="#455a64">Guesses So Far</text>
+                </vstack>
+                
+                <vstack backgroundColor="#e8f5e9" padding="medium" cornerRadius="medium" width="45%">
+                  <text size="large" weight="bold" color="#2e7d32">
+                    {successRate}%
+                  </text>
+                  <text size="small" color="#455a64">Success Rate</text>
+                </vstack>
+              </hstack>
+              
+              <spacer size="medium" />
+              
+              {userGuess && (
+                <vstack backgroundColor="#fff8e1" padding="small" cornerRadius="medium" width="85%">
+                  <text weight="bold" color="#ed6c02">Your Guess</text>
+                  {userGuessResult.isCorrect !== undefined && (
+                    <text size="small" weight="bold" color={userGuessResult.isCorrect ? "#2e7d32" : "#c62828"}>
+                      Result: {userGuessResult.isCorrect ? "Correct! 🎉" : "Incorrect ❌"}
+                    </text>
+                  )}
+                </vstack>
+              )}
+              
+              <spacer size="medium" />
+              
+              {userGuess ? (
+                <vstack backgroundColor="#f5f5f5" padding="small" cornerRadius="medium" width="85%">
+                  <text weight="bold" color="#1a1a2e">Game Board Visualization</text>
+                  <spacer size="xsmall" />
+                  
+                  {/* Simple visual representation of guess vs target */}
+                  <hstack width="100%" height="200px" backgroundColor="#ffffff" cornerRadius="small">
+                    <zstack width="100%" height="100%" alignment="middle center">
+                      {/* Coordinate axes for reference */}
+                      <hstack width="80%" height="1px" backgroundColor="#e0e0e0" alignment="middle center" />
+                      <vstack width="1px" height="80%" backgroundColor="#e0e0e0" alignment="middle center" />
+                      
+                      {/* Target position marker */}
+                      <hstack width="100%" height="100%">
+                        <spacer 
+                          width={`${Math.max(0, Math.min(100, (gameData.x / canvasConfig.width) * 100))}%`} 
+                          height={`${Math.max(0, Math.min(100, (gameData.y / canvasConfig.height) * 100))}%`}
+                        />
+                        <vstack width="20px" height="20px" backgroundColor="#2e7d32" cornerRadius="full" />
+                        <spacer grow />
+                      </hstack>
+                      
+                      {/* User guess position marker */}
+                      <hstack width="100%" height="100%">
+                        <spacer 
+                          width={`${Math.max(0, Math.min(100, (userGuess.x / canvasConfig.width) * 100))}%`} 
+                          height={`${Math.max(0, Math.min(100, (userGuess.y / canvasConfig.height) * 100))}%`}
+                        />
+                        <vstack width="20px" height="20px" backgroundColor="#c62828" cornerRadius="full" />
+                        <spacer grow />
+                      </hstack>
+                    </zstack>
+                  </hstack>
+                  
+                  <spacer size="small" />
+                  <hstack gap="medium" alignment="middle center">
+                    <vstack alignment="middle center">
+                      <vstack width="14px" height="14px" backgroundColor="#2e7d32" cornerRadius="full" />
+                      <text size="xsmall">Target</text>
+                    </vstack>
+                    <vstack alignment="middle center">
+                      <vstack width="14px" height="14px" backgroundColor="#c62828" cornerRadius="full" />
+                      <text size="xsmall">Your Guess</text>
+                    </vstack>
+                  </hstack>
+                  
+                  <spacer size="small" />
+                  <text size="xsmall" color="#78909c" alignment="middle center">
+                    Distance: {Math.sqrt(Math.pow(userGuess.x - gameData.x, 2) + Math.pow(userGuess.y - gameData.y, 2)).toFixed(0)} pixels
+                  </text>
+                </vstack>
+              ) : (
+                <button 
+                  appearance="primary"
+                  onPress={() => webView.mount()}
+                  icon="add"
+                >
+                  Play Game
+                </button>
+              )}
+            </vstack>
           </vstack>
-        </vstack>
-      );
+        );
+      }
     } else {
       // Render the creator state for a new empty game post (shouldn't typically happen)
       return (
-        <vstack grow padding="small">
+        <vstack grow padding="large" cornerRadius="large" backgroundColor="#f7f9fc">
           <vstack grow alignment="middle center">
-            <text size="xlarge" weight="bold">
+            <text size="xxlarge" weight="bold" color="#1a1a2e">
               Create a Hidden Shape
             </text>
-            <text size="medium">
+            <text size="medium" color="#455a64">
               Hide a shape among many others for players to find!
             </text>
-            <spacer />
-            <button onPress={() => webView.mount()}>Create Hidden Shape</button>
+            <spacer size="large" />
+            <button 
+              appearance="primary"
+              onPress={() => webView.mount()}
+              icon="add"
+            >
+              Create Hidden Shape
+            </button>
           </vstack>
         </vstack>
       );
