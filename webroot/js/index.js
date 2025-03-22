@@ -144,10 +144,20 @@ class HiddenShapeGame {
       }
     }
     
+    // Show the canvas-buttons container regardless of mode
+    const canvasButtons = document.querySelector('.canvas-buttons');
+    if (canvasButtons) {
+      canvasButtons.style.display = 'flex';
+    }
+    
     if (data.isHub) {
       this.gameMode = 'hub';
       this.renderer.gameMode = 'hub'; // Set renderer's game mode
       this.gameModes.showHubMode();
+      
+      // Explicitly show hub buttons
+      if (this.regenerateShapesBtn) this.regenerateShapesBtn.style.display = 'block';
+      if (this.createNewGameBtn) this.createNewGameBtn.style.display = 'block';
       
       // For the hub, we should display the random shapes right away
       if (this.selectedShapeText) {
@@ -177,6 +187,12 @@ class HiddenShapeGame {
       this.renderer.gameMode = 'creator'; // Set renderer's game mode
       this.gameModes.showCreatorMode();
       
+      // Explicitly show creator buttons
+      const regenerateCreatorBtn = document.getElementById('regenerate-shapes-creator');
+      const submitHiddenShapeBtn = document.getElementById('submit-hidden-shape');
+      if (regenerateCreatorBtn) regenerateCreatorBtn.style.display = 'block';
+      if (submitHiddenShapeBtn) submitHiddenShapeBtn.style.display = 'block';
+      
       // Initialize the selected shape and color text
       if (this.selectedShapeText) {
         this.selectedShapeText.textContent = this.selectedShape.charAt(0).toUpperCase() + this.selectedShape.slice(1);
@@ -190,6 +206,14 @@ class HiddenShapeGame {
     if (this.canvasConfig) {
       this.renderer.renderWaldoStyleCanvas();
     }
+    
+    // Force button visibility update
+    setTimeout(() => {
+      // Manually trigger the syncButtonVisibility function from our inline script
+      const event = new Event('custom-mode-change');
+      document.dispatchEvent(event);
+      console.log('Dispatched custom event to update button visibility');
+    }, 200);
   }
   
   processDevvitMessage(event) {

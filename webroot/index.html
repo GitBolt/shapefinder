@@ -15,11 +15,29 @@
       <div id="game-instructions" class="instructions"></div>
       
       <div class="game-layout">
-        <div id="game-canvas-container">
-          <!-- Stack canvases in the correct z-index order -->
-          <canvas id="shape-cloud" width="350" height="350" data-role="background-shapes"></canvas>
-          <canvas id="heatmap-layer" width="350" height="350" data-role="heatmap"></canvas>
-          <canvas id="interaction-layer" width="350" height="350" data-role="interaction"></canvas>
+        <div class="left-column">
+          <div id="game-canvas-container">
+            <!-- Stack canvases in the correct z-index order -->
+            <canvas id="shape-cloud" width="350" height="350" data-role="background-shapes"></canvas>
+            <canvas id="heatmap-layer" width="350" height="350" data-role="heatmap"></canvas>
+            <canvas id="interaction-layer" width="350" height="350" data-role="interaction"></canvas>
+          </div>
+          
+          <div class="canvas-buttons">
+            <button id="regenerate-shapes" class="secondary-btn" style="display: none;">
+              <span>Add Random Shapes</span>
+            </button>
+            <button id="create-new-game" class="action-btn" style="display: none;">
+              <span>Create Game</span>
+            </button>
+            
+            <button id="regenerate-shapes-creator" class="secondary-btn" style="display: none;">
+              <span>Add Random Shapes</span>
+            </button>
+            <button id="submit-hidden-shape" class="action-btn" style="display: none;">
+              <span>Create Game</span>
+            </button>
+          </div>
         </div>
         
         <div class="game-controls">
@@ -27,38 +45,33 @@
           <div id="hub-controls" class="controls-container" style="display: none;">
             <h3>Shape</h3>
             <div class="shape-selector">
-              <button data-shape="square" class="shape-btn active">
+              <button data-shape="square" class="shape-btn active" aria-label="Square shape">
                 <div class="shape-icon square"></div>
               </button>
-              <button data-shape="circle" class="shape-btn">
+              <button data-shape="circle" class="shape-btn" aria-label="Circle shape">
                 <div class="shape-icon circle"></div>
               </button>
-              <button data-shape="triangle" class="shape-btn">
+              <button data-shape="triangle" class="shape-btn" aria-label="Triangle shape">
                 <div class="shape-icon triangle"></div>
               </button>
-              <button data-shape="star" class="shape-btn">
+              <button data-shape="star" class="shape-btn" aria-label="Star shape">
                 <div class="shape-icon star"></div>
               </button>
             </div>
             
             <h3>Color</h3>
             <div class="color-selector">
-              <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;"></button>
-              <button data-color="blue" class="color-btn" style="background-color: #4dabf7;"></button>
-              <button data-color="green" class="color-btn" style="background-color: #69db7c;"></button>
-              <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;"></button>
-              <button data-color="purple" class="color-btn" style="background-color: #b197fc;"></button>
+              <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;" aria-label="Red color"></button>
+              <button data-color="blue" class="color-btn" style="background-color: #4dabf7;" aria-label="Blue color"></button>
+              <button data-color="green" class="color-btn" style="background-color: #69db7c;" aria-label="Green color"></button>
+              <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;" aria-label="Yellow color"></button>
+              <button data-color="purple" class="color-btn" style="background-color: #b197fc;" aria-label="Purple color"></button>
             </div>
             
             <h3>Size</h3>
             <div class="shape-size-control">
-              <input type="range" id="hub-shape-size" min="10" max="60" value="24" class="size-slider">
+              <input type="range" id="hub-shape-size" min="10" max="60" value="24" class="size-slider" aria-label="Shape size slider">
               <span id="hub-shape-size-value">24</span>
-            </div>
-            
-            <div class="action-buttons">
-              <button id="regenerate-shapes" class="secondary-btn">Add Random Shapes</button>
-              <button id="create-new-game" class="action-btn">Create Game</button>
             </div>
           </div>
           
@@ -66,38 +79,33 @@
           <div id="creator-controls" class="controls-container" style="display: none;">
             <h3>Shape</h3>
             <div class="shape-selector">
-              <button data-shape="square" class="shape-btn active">
+              <button data-shape="square" class="shape-btn active" aria-label="Square shape">
                 <div class="shape-icon square"></div>
               </button>
-              <button data-shape="circle" class="shape-btn">
+              <button data-shape="circle" class="shape-btn" aria-label="Circle shape">
                 <div class="shape-icon circle"></div>
               </button>
-              <button data-shape="triangle" class="shape-btn">
+              <button data-shape="triangle" class="shape-btn" aria-label="Triangle shape">
                 <div class="shape-icon triangle"></div>
               </button>
-              <button data-shape="star" class="shape-btn">
+              <button data-shape="star" class="shape-btn" aria-label="Star shape">
                 <div class="shape-icon star"></div>
               </button>
             </div>
             
             <h3>Color</h3>
             <div class="color-selector">
-              <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;"></button>
-              <button data-color="blue" class="color-btn" style="background-color: #4dabf7;"></button>
-              <button data-color="green" class="color-btn" style="background-color: #69db7c;"></button>
-              <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;"></button>
-              <button data-color="purple" class="color-btn" style="background-color: #b197fc;"></button>
+              <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;" aria-label="Red color"></button>
+              <button data-color="blue" class="color-btn" style="background-color: #4dabf7;" aria-label="Blue color"></button>
+              <button data-color="green" class="color-btn" style="background-color: #69db7c;" aria-label="Green color"></button>
+              <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;" aria-label="Yellow color"></button>
+              <button data-color="purple" class="color-btn" style="background-color: #b197fc;" aria-label="Purple color"></button>
             </div>
             
             <h3>Size</h3>
             <div class="shape-size-control">
-              <input type="range" id="creator-shape-size" min="10" max="60" value="24" class="size-slider">
+              <input type="range" id="creator-shape-size" min="10" max="60" value="24" class="size-slider" aria-label="Shape size slider">
               <span id="creator-shape-size-value">24</span>
-            </div>
-            
-            <div class="action-buttons">
-              <button id="regenerate-shapes-creator" class="secondary-btn">Add Random Shapes</button>
-              <button id="submit-hidden-shape" class="action-btn">Create Game</button>
             </div>
           </div>
           
@@ -137,5 +145,131 @@
       <div id="notification" class="notification" style="display: none;"></div>
     </div>
     <script type="module" src="js/index.js"></script>
+    <script>
+      // Handle visibility of buttons based on which mode is active
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded - initializing button visibility');
+        
+        // Force buttons to be displayed initially
+        function forceInitialButtonDisplay() {
+          const canvasButtons = document.querySelector('.canvas-buttons');
+          if (canvasButtons) {
+            canvasButtons.style.display = 'flex';
+            console.log('Forced canvas buttons container to display flex');
+          }
+          
+          // Check if hub or creator are active
+          const hubControls = document.getElementById('hub-controls');
+          const creatorControls = document.getElementById('creator-controls');
+          
+          const hubActive = hubControls && getComputedStyle(hubControls).display !== 'none';
+          const creatorActive = creatorControls && getComputedStyle(creatorControls).display !== 'none';
+          
+          // Explicitly set button visibility based on active mode
+          if (hubActive) {
+            console.log('Hub mode active, showing hub buttons');
+            const regenerateBtn = document.getElementById('regenerate-shapes');
+            const createBtn = document.getElementById('create-new-game');
+            
+            if (regenerateBtn) {
+              regenerateBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+            }
+            if (createBtn) {
+              createBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+            }
+          } else if (creatorActive) {
+            console.log('Creator mode active, showing creator buttons');
+            const regenerateBtn = document.getElementById('regenerate-shapes-creator');
+            const submitBtn = document.getElementById('submit-hidden-shape');
+            
+            if (regenerateBtn) {
+              regenerateBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+            }
+            if (submitBtn) {
+              submitBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+            }
+          }
+        }
+        
+        // Function to sync the visibility of buttons
+        function syncButtonVisibility() {
+          try {
+            const hubControls = document.getElementById('hub-controls');
+            const creatorControls = document.getElementById('creator-controls');
+            const hubControlsVisible = hubControls && getComputedStyle(hubControls).display !== 'none';
+            const creatorControlsVisible = creatorControls && getComputedStyle(creatorControls).display !== 'none';
+            
+            console.log('Mode visibility:', { hubControlsVisible, creatorControlsVisible });
+            
+            // Get button elements
+            const regenerateShapesBtn = document.getElementById('regenerate-shapes');
+            const createNewGameBtn = document.getElementById('create-new-game');
+            const regenerateShapesCreatorBtn = document.getElementById('regenerate-shapes-creator');
+            const submitHiddenShapeBtn = document.getElementById('submit-hidden-shape');
+            
+            // Set explicit display style for all buttons based on active mode
+            if (regenerateShapesBtn) regenerateShapesBtn.style.display = hubControlsVisible ? 'block' : 'none';
+            if (createNewGameBtn) createNewGameBtn.style.display = hubControlsVisible ? 'block' : 'none';
+            if (regenerateShapesCreatorBtn) regenerateShapesCreatorBtn.style.display = creatorControlsVisible ? 'block' : 'none';
+            if (submitHiddenShapeBtn) submitHiddenShapeBtn.style.display = creatorControlsVisible ? 'block' : 'none';
+            
+            // Force the canvas-buttons container to display: flex to ensure buttons are visible
+            const canvasButtons = document.querySelector('.canvas-buttons');
+            if (canvasButtons) {
+              canvasButtons.style.display = (hubControlsVisible || creatorControlsVisible) ? 'flex' : 'none';
+              console.log('Canvas buttons container display set to:', canvasButtons.style.display);
+            }
+          } catch (error) {
+            console.error('Error syncing button visibility:', error);
+          }
+        }
+        
+        // Run force display immediately
+        forceInitialButtonDisplay();
+        
+        // Run visibility sync with slight delay to ensure all elements are loaded
+        setTimeout(syncButtonVisibility, 100);
+        
+        // Create a mutation observer to watch for changes in display style
+        const observer = new MutationObserver(function(mutations) {
+          console.log('Mutation observed, syncing button visibility');
+          syncButtonVisibility();
+        });
+        
+        // Observe all control containers for style changes
+        const hubControls = document.getElementById('hub-controls');
+        const creatorControls = document.getElementById('creator-controls');
+        const guesserControls = document.getElementById('guesser-controls');
+        const resultsControls = document.getElementById('results-controls');
+        
+        if (hubControls) observer.observe(hubControls, { attributes: true, attributeFilter: ['style'] });
+        if (creatorControls) observer.observe(creatorControls, { attributes: true, attributeFilter: ['style'] });
+        if (guesserControls) observer.observe(guesserControls, { attributes: true, attributeFilter: ['style'] });
+        if (resultsControls) observer.observe(resultsControls, { attributes: true, attributeFilter: ['style'] });
+        
+        // Listen for custom event to force button visibility update
+        document.addEventListener('custom-mode-change', function() {
+          console.log('Custom mode change event received');
+          syncButtonVisibility();
+          forceInitialButtonDisplay(); // Also run force display when mode changes
+        });
+        
+        // Force initial button visibility after a delay
+        setTimeout(function() {
+          // Force display again
+          forceInitialButtonDisplay();
+          
+          // Set initial visibility based on current active mode
+          syncButtonVisibility();
+        }, 500);
+        
+        // Run one final check after full page load
+        window.addEventListener('load', function() {
+          console.log('Window loaded, final button visibility check');
+          forceInitialButtonDisplay();
+          syncButtonVisibility();
+        });
+      });
+    </script>
   </body>
 </html> 
