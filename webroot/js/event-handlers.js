@@ -3,7 +3,7 @@ export class EventHandlers {
     this.game = game;
     this.renderer = renderer;
     this.timerInterval = null;
-    this.timeRemaining = 10; // 10 seconds countdown
+    this.timeRemaining = 5; // 5 seconds countdown
     this.startTime = null; // Add startTime to track when the timer starts
   }
   
@@ -302,7 +302,7 @@ export class EventHandlers {
     this.clearTimer();
     
     // Reset time
-    this.timeRemaining = 10;
+    this.timeRemaining = 5;
     
     // Store start time for calculating seconds taken
     this.startTime = Date.now();
@@ -325,11 +325,11 @@ export class EventHandlers {
       
       // Update UI
       timerText.textContent = this.timeRemaining;
-      const progressWidth = (this.timeRemaining / 10) * 100;
+      const progressWidth = (this.timeRemaining / 5) * 100;
       timerProgress.style.width = `${progressWidth}%`;
       
-      // Add low time warning when 3 seconds or less remain
-      if (this.timeRemaining <= 3) {
+      // Add low time warning when 2 seconds or less remain
+      if (this.timeRemaining <= 2) {
         timerProgress.classList.add('timer-progress-low');
         timerText.classList.add('timer-low');
       }
@@ -376,8 +376,8 @@ export class EventHandlers {
     // Calculate seconds taken to guess
     let secondsTaken = 0; // Default to 0 for instant guesses
     if (this.startTime) {
-      // Calculate elapsed time in seconds (10 - remaining time)
-      secondsTaken = Math.min(10, Math.round(10 - this.timeRemaining));
+      // Calculate elapsed time in seconds (5 - remaining time)
+      secondsTaken = Math.min(5, Math.round(5 - this.timeRemaining));
       console.log('Time taken to guess:', secondsTaken, 'seconds');
     }
     

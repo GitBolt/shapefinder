@@ -56,7 +56,7 @@ export class GameModes {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
-    this.gameInstructions.textContent = `Find the hidden ${colorName} ${shapeName} among the other shapes! You have 10 seconds to find it.`;
+    this.gameInstructions.textContent = `Find the hidden ${colorName} ${shapeName} among the other shapes! You have 5 seconds to find it.`;
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'none';
