@@ -38,6 +38,9 @@ Devvit.addMenuItem({
             cornerRadius="medium"
             width="80%"
           >
+            <text size="small" color="#64748b" alignment="middle center">
+              This will create a central hub where users can create and play shape-finding games!
+            </text>
           </vstack>
         </vstack>
       ),

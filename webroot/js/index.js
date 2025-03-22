@@ -111,17 +111,9 @@ class HiddenShapeGame {
       // Make sure the target shape is properly set in the canvas config
       if (data.gameData) {
         // Ensure the targetShape is set to the actual hidden shape
-        let shapeType = 'shape';
-        if (typeof data.gameData.shapeType === 'string') {
-          shapeType = data.gameData.shapeType;
-        } else if (data.gameData.shapeType && typeof data.gameData.shapeType === 'object') {
-          console.log('ShapeType is object:', data.gameData.shapeType);
-          shapeType = 'shape';
-        }
-        
         this.canvasConfig.targetShape = {
-          shapeType: shapeType,
-          color: data.gameData.color || '#000000',
+          shapeType: data.gameData.shapeType,
+          color: data.gameData.color,
           x: data.gameData.x,
           y: data.gameData.y,
           opacity: data.gameData.opacity || 0.85,
@@ -134,17 +126,9 @@ class HiddenShapeGame {
       // If we're not in hub mode and don't have canvas config, create one
       // We only auto-generate in guesser/results mode, not in creator or hub
       if (data.gameData) {
-        let shapeType = 'shape';
-        if (typeof data.gameData.shapeType === 'string') {
-          shapeType = data.gameData.shapeType;
-        } else if (data.gameData.shapeType && typeof data.gameData.shapeType === 'object') {
-          console.log('ShapeType is object:', data.gameData.shapeType);
-          shapeType = 'shape';
-        }
-        
         const targetShape = {
-          shapeType: shapeType,
-          color: data.gameData.color || '#000000',
+          shapeType: data.gameData.shapeType,
+          color: data.gameData.color,
           x: data.gameData.x,
           y: data.gameData.y,
           size: data.gameData.size || 30 // Use provided size or default to 30
@@ -183,20 +167,7 @@ class HiddenShapeGame {
         this.selectedColorText.textContent = this.selectedColor.charAt(0).toUpperCase() + this.selectedColor.slice(1);
       }
     } else if (data.gameData) {
-      // Process gameData to ensure valid properties
-      let shapeType = 'shape';
-      if (typeof data.gameData.shapeType === 'string') {
-        shapeType = data.gameData.shapeType;
-      } else if (data.gameData.shapeType && typeof data.gameData.shapeType === 'object') {
-        console.log('ShapeType is object:', data.gameData.shapeType);
-        shapeType = 'shape';
-      }
-      
-      this.hiddenShape = {
-        ...data.gameData,
-        shapeType: shapeType,
-        color: data.gameData.color || '#000000'
-      };
+      this.hiddenShape = data.gameData;
       this.guessCount = data.guessCount;
       
       if (this.isRevealed) {
@@ -264,21 +235,7 @@ class HiddenShapeGame {
               // Make sure to clear any running timers
               this.eventHandlers.clearTimer();
               
-              // Process gameData to ensure valid properties
-              let shapeType = 'shape';
-              if (message.data.gameData && typeof message.data.gameData.shapeType === 'string') {
-                shapeType = message.data.gameData.shapeType;
-              } else if (message.data.gameData && message.data.gameData.shapeType && 
-                         typeof message.data.gameData.shapeType === 'object') {
-                console.log('ShapeType is object:', message.data.gameData.shapeType);
-                shapeType = 'shape';
-              }
-              
-              this.hiddenShape = message.data.gameData ? {
-                ...message.data.gameData,
-                shapeType: shapeType,
-                color: message.data.gameData.color || '#000000'
-              } : null;
+              this.hiddenShape = message.data.gameData;
               this.allGuesses = message.data.guesses;
               this.gameMode = 'personal-results';
               this.renderer.gameMode = 'personal-results'; // Update the renderer's game mode

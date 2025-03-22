@@ -388,5 +388,8 @@ export class EventHandlers {
         secondsTaken: secondsTaken
       }
     });
+    
+    // Show a submitting notification
+    this.game.showNotification('Submitting your guess...');
   }
 } 
