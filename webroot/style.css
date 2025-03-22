@@ -22,29 +22,52 @@ body {
   color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.4;
+  overflow-x: hidden;
 }
 
 .game-container {
   width: 100%;
-  max-width: 550px; /* Increased to accommodate side selectors */
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  position: relative; /* Added for positioning of children */
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+}
+
+.game-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-width: 650px;
+  gap: 1.25rem;
+  align-items: flex-start;
+  justify-content: center;
+  padding-left: 20px; /* Add padding to shift content right */
+}
+
+.game-controls {
+  flex: 0 0 250px;
+  width: 250px;
+  max-width: 250px;
 }
 
 h1 {
-  font-size: 2rem;
-  color: var(--primary-color);
-  margin: 0.5rem 0;
+  font-size: 2.75rem;
+  color: #ff4b2b;
+  margin: 0.75rem 0 1rem;
   text-align: center;
+  font-weight: 700;
 }
 
 h3 {
   font-size: 1.25rem;
-  margin: 0.5rem 0;
+  margin: 0.75rem 0 0.5rem;
   text-align: center;
+  font-weight: 600;
+  color: #333;
 }
 
 h4 {
@@ -67,23 +90,24 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: 1.25rem;
   background-color: var(--canvas-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 #game-canvas-container {
+  flex: 0 0 350px;
   position: relative;
-  width: 85%; /* Reduced width to make room for selectors */
-  max-width: 360px; /* Reduced from 400px to make room for selectors */
-  height: 400px;
-  margin: 0 auto;
-  margin-bottom: 60px; /* Reduced from 120px to bring buttons closer */
-  border-radius: var(--border-radius);
-  overflow: hidden; /* Changed back to hidden */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Added stronger shadow for canvas */
-  border: 1px solid rgba(0, 0, 0, 0.1); /* Added subtle border */
+  width: 350px;
+  min-width: 350px;
+  height: 350px;
+  margin: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: var(--canvas-bg);
 }
 
 #shape-cloud,
@@ -100,7 +124,6 @@ p {
 #shape-cloud {
   z-index: 1;
   background-color: var(--canvas-bg);
-  box-shadow: var(--shadow);
 }
 
 #interaction-layer {
@@ -119,40 +142,26 @@ p {
 .shape-selector,
 .color-selector {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  position: absolute;
-  top: 50%; /* Center vertically */
-  transform: translateY(-50%); /* Center vertically */
-  width: 60px;
-  z-index: 5; /* Ensure they're above other elements */
-}
-
-.shape-selector {
-  left: 5px; /* Closer to the canvas */
-}
-
-.color-selector {
-  right: 5px; /* Closer to the canvas */
+  flex-direction: row;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 0.75rem;
 }
 
 .shape-btn,
 .color-btn {
-  width: 60px;
+  width: 40px;
   height: 40px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 0.8rem;
   transition: all 0.2s;
 }
 
 .shape-btn.active,
 .color-btn.active {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+  border: 2px solid var(--secondary-color);
+  box-shadow: 0 0 0 2px rgba(0, 121, 211, 0.2);
 }
 
 .shape-btn:hover,
@@ -160,9 +169,47 @@ p {
   border-color: #aaa;
 }
 
+.shape-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.shape-icon.square {
+  background-color: #4dabf7;
+  width: 18px;
+  height: 18px;
+}
+
+.shape-icon.circle {
+  background-color: #343a40;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.shape-icon.triangle {
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 18px solid #495057;
+}
+
+.shape-icon.star {
+  position: relative;
+  color: #ffd43b;
+  font-size: 20px;
+}
+
+.shape-icon.star:before {
+  content: "★";
+}
+
 .action-btn {
   padding: 0.75rem;
-  background-color: var(--primary-color);
+  width: 100%;
+  background-color: var(--secondary-color);
   color: white;
   border: none;
   border-radius: var(--border-radius);
@@ -170,12 +217,11 @@ p {
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
-  align-self: center;
-  min-width: 200px;
+  margin-top: 0.5rem;
 }
 
 .action-btn:hover {
-  background-color: #e53e3e;
+  background-color: #0066b8;
 }
 
 .action-btn:disabled {
@@ -184,7 +230,8 @@ p {
 }
 
 .secondary-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
   background-color: #f1f3f5;
   color: var(--text-color);
   border: 1px solid #ddd;
@@ -193,6 +240,7 @@ p {
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-top: 0.25rem;
 }
 
 .secondary-btn:hover {
@@ -216,7 +264,9 @@ p {
 
 #stats-container {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
@@ -225,38 +275,11 @@ p {
   background-color: #f1f3f5;
   padding: 0.75rem;
   border-radius: var(--border-radius);
+  flex: 1 0 45%;
   min-width: 120px;
 }
 
-/* Hub-specific styles */
-#hub-controls {
-  background-color: var(--canvas-bg);
-  border: 2px solid var(--secondary-color);
-}
-
-#create-new-game {
-  background-color: var(--secondary-color);
-}
-
-#create-new-game:hover {
-  background-color: #0066b8;
-}
-
-@media (max-width: 500px) {
-  #game-canvas-container {
-    height: 300px;
-  }
-  
-  #shape-cloud,
-  #interaction-layer,
-  #heatmap-layer {
-    width: 300px;
-    height: 300px;
-  }
-}
-
 .shape-size-control {
-  margin: 0.5rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -264,46 +287,80 @@ p {
 }
 
 .size-slider {
-  width: 80%;
-  max-width: 300px;
+  width: 100%;
   cursor: pointer;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #dee2e6;
+  border-radius: 2px;
+}
+
+.size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4dabf7;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.size-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4dabf7;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
 .action-buttons {
   display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  position: absolute;
-  bottom: -50px; /* Reduced from -70px to bring buttons closer to canvas */
-  left: 0;
-  right: 0;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   width: 100%;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-@media (max-width: 600px) {
-  /* For smaller screens, use a more compact layout */
+.shape-size-control span {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
   .game-container {
+    padding-bottom: 2rem;
     max-width: 100%;
   }
+}
+
+@media (max-width: 500px) {
+  .game-container {
+    padding: 0.5rem 0 2rem 0;
+  }
+}
+
+/* Add these compact styles for better mobile viewing */
+@media (max-height: 700px) {
+  h3 {
+    margin: 0.5rem 0 0.35rem;
+  }
   
-  .shape-selector,
+  .shape-selector, 
   .color-selector {
-    position: static;
-    flex-direction: row;
-    width: 100%;
-    justify-content: center;
-    transform: none;
+    margin-bottom: 0.5rem;
   }
   
   .action-buttons {
-    position: static;
-    margin-top: 1rem;
-    flex-direction: row; /* Ensure buttons stay in a row */
+    margin-top: 0.75rem;
   }
   
-  #game-canvas-container {
-    margin-bottom: 1rem;
+  .controls-container {
+    padding: 1rem;
   }
 } 

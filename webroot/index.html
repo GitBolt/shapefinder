@@ -14,101 +14,127 @@
       <h1>Where's the Shape?</h1>
       <div id="game-instructions" class="instructions"></div>
       
-      <!-- Hub Post Controls -->
-      <div id="hub-controls" class="controls-container" style="display: none;">
-        <h3>Create a new game</h3>
-        <p>Hide a <span id="selected-shape">Circle</span> in <span id="selected-color">Red</span></p>
-        <div class="shape-selector">
-          <button data-shape="circle" class="shape-btn active">Circle</button>
-          <button data-shape="star" class="shape-btn">Star</button>
-          <button data-shape="square" class="shape-btn">Square</button>
-          <button data-shape="triangle" class="shape-btn">Triangle</button>
+      <div class="game-layout">
+        <div id="game-canvas-container">
+          <!-- Stack canvases in the correct z-index order -->
+          <canvas id="shape-cloud" width="350" height="350" data-role="background-shapes"></canvas>
+          <canvas id="heatmap-layer" width="350" height="350" data-role="heatmap"></canvas>
+          <canvas id="interaction-layer" width="350" height="350" data-role="interaction"></canvas>
         </div>
-        <div class="color-selector">
-          <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;">Red</button>
-          <button data-color="green" class="color-btn" style="background-color: #51cf66;">Green</button>
-          <button data-color="blue" class="color-btn" style="background-color: #339af0;">Blue</button>
-          <button data-color="purple" class="color-btn" style="background-color: #cc5de8;">Purple</button>
-          <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;">Yellow</button>
-          <button data-color="orange" class="color-btn" style="background-color: #fd7e14;">Orange</button>
-        </div>
-        <div class="shape-size-control">
-          <label for="hub-shape-size">Shape Size: <span id="hub-shape-size-value">30</span>px</label>
-          <input type="range" id="hub-shape-size" min="10" max="60" value="30" class="size-slider">
-        </div>
-        <div class="action-buttons">
-          <button id="regenerate-shapes" class="secondary-btn">Generate Random Shapes</button>
-          <button id="create-new-game" class="action-btn">Create New Game</button>
-        </div>
-      </div>
-      
-      <!-- Game Creator Controls -->
-      <div id="creator-controls" class="controls-container" style="display: none;">
-        <h3>Create a new game</h3>
-        <p>Hide a <span id="selected-shape">Circle</span> in <span id="selected-color">Red</span></p>
-        <div class="shape-selector">
-          <button data-shape="circle" class="shape-btn active">Circle</button>
-          <button data-shape="star" class="shape-btn">Star</button>
-          <button data-shape="square" class="shape-btn">Square</button>
-          <button data-shape="triangle" class="shape-btn">Triangle</button>
-        </div>
-        <div class="color-selector">
-          <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;">Red</button>
-          <button data-color="green" class="color-btn" style="background-color: #51cf66;">Green</button>
-          <button data-color="blue" class="color-btn" style="background-color: #339af0;">Blue</button>
-          <button data-color="purple" class="color-btn" style="background-color: #cc5de8;">Purple</button>
-          <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;">Yellow</button>
-          <button data-color="orange" class="color-btn" style="background-color: #fd7e14;">Orange</button>
-        </div>
-        <div class="shape-size-control">
-          <label for="creator-shape-size">Shape Size: <span id="creator-shape-size-value">30</span>px</label>
-          <input type="range" id="creator-shape-size" min="10" max="60" value="30" class="size-slider">
-        </div>
-        <div class="action-buttons">
-          <button id="regenerate-shapes-creator" class="secondary-btn">Generate Random Shapes</button>
-          <button id="submit-hidden-shape" class="action-btn">Post Hidden Shape</button>
-        </div>
-      </div>
-      
-      <div id="guesser-controls" class="controls-container" style="display: none;">
-        <h3>Find the hidden <span id="hidden-shape-name">shape</span>!</h3>
-        <p>Click on where you think the shape is hidden among all the others. You get one guess!</p>
-        <p id="guess-count">Total guesses: 0</p>
-        <button id="submit-guess" class="action-btn" disabled>Submit Your Guess</button>
-      </div>
-      
-      <div id="results-controls" class="controls-container" style="display: none;">
-        <h3>The hidden <span id="revealed-shape-name">shape</span> is revealed!</h3>
-        <p id="total-guesses">Total guesses: 0</p>
-        <div id="stats-container">
-          <div class="stat">
-            <h4>Correct Guesses</h4>
-            <p id="correct-guesses">0</p>
+        
+        <div class="game-controls">
+          <!-- Hub Post Controls -->
+          <div id="hub-controls" class="controls-container" style="display: none;">
+            <h3>Shape</h3>
+            <div class="shape-selector">
+              <button data-shape="square" class="shape-btn active">
+                <div class="shape-icon square"></div>
+              </button>
+              <button data-shape="circle" class="shape-btn">
+                <div class="shape-icon circle"></div>
+              </button>
+              <button data-shape="triangle" class="shape-btn">
+                <div class="shape-icon triangle"></div>
+              </button>
+              <button data-shape="star" class="shape-btn">
+                <div class="shape-icon star"></div>
+              </button>
+            </div>
+            
+            <h3>Color</h3>
+            <div class="color-selector">
+              <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;"></button>
+              <button data-color="blue" class="color-btn" style="background-color: #4dabf7;"></button>
+              <button data-color="green" class="color-btn" style="background-color: #69db7c;"></button>
+              <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;"></button>
+              <button data-color="purple" class="color-btn" style="background-color: #b197fc;"></button>
+            </div>
+            
+            <h3>Size</h3>
+            <div class="shape-size-control">
+              <input type="range" id="hub-shape-size" min="10" max="60" value="24" class="size-slider">
+              <span id="hub-shape-size-value">24</span>
+            </div>
+            
+            <div class="action-buttons">
+              <button id="regenerate-shapes" class="secondary-btn">Add Random Shapes</button>
+              <button id="create-new-game" class="action-btn">Create Game</button>
+            </div>
           </div>
-          <div class="stat">
-            <h4>Success Rate</h4>
-            <p id="correct-percentage">0%</p>
+          
+          <!-- Game Creator Controls -->
+          <div id="creator-controls" class="controls-container" style="display: none;">
+            <h3>Shape</h3>
+            <div class="shape-selector">
+              <button data-shape="square" class="shape-btn active">
+                <div class="shape-icon square"></div>
+              </button>
+              <button data-shape="circle" class="shape-btn">
+                <div class="shape-icon circle"></div>
+              </button>
+              <button data-shape="triangle" class="shape-btn">
+                <div class="shape-icon triangle"></div>
+              </button>
+              <button data-shape="star" class="shape-btn">
+                <div class="shape-icon star"></div>
+              </button>
+            </div>
+            
+            <h3>Color</h3>
+            <div class="color-selector">
+              <button data-color="red" class="color-btn active" style="background-color: #ff6b6b;"></button>
+              <button data-color="blue" class="color-btn" style="background-color: #4dabf7;"></button>
+              <button data-color="green" class="color-btn" style="background-color: #69db7c;"></button>
+              <button data-color="yellow" class="color-btn" style="background-color: #ffd43b;"></button>
+              <button data-color="purple" class="color-btn" style="background-color: #b197fc;"></button>
+            </div>
+            
+            <h3>Size</h3>
+            <div class="shape-size-control">
+              <input type="range" id="creator-shape-size" min="10" max="60" value="24" class="size-slider">
+              <span id="creator-shape-size-value">24</span>
+            </div>
+            
+            <div class="action-buttons">
+              <button id="regenerate-shapes-creator" class="secondary-btn">Add Random Shapes</button>
+              <button id="submit-hidden-shape" class="action-btn">Create Game</button>
+            </div>
           </div>
-          <div class="stat">
-            <h4>Closest Guess</h4>
-            <p id="closest-guess">-</p>
+          
+          <div id="guesser-controls" class="controls-container" style="display: none;">
+            <h3>Find the hidden <span id="hidden-shape-name">shape</span>!</h3>
+            <p>Click on where you think the shape is hidden among all the others. You get one guess!</p>
+            <p id="guess-count">Total guesses: 0</p>
+            <button id="submit-guess" class="action-btn" disabled>Submit Your Guess</button>
           </div>
-          <div class="stat">
-            <h4>Wildest Miss</h4>
-            <p id="wildest-miss">-</p>
+          
+          <div id="results-controls" class="controls-container" style="display: none;">
+            <h3>The hidden <span id="revealed-shape-name">shape</span> is revealed!</h3>
+            <p id="total-guesses">Total guesses: 0</p>
+            <div id="stats-container">
+              <div class="stat">
+                <h4>Correct Guesses</h4>
+                <p id="correct-guesses">0</p>
+              </div>
+              <div class="stat">
+                <h4>Success Rate</h4>
+                <p id="correct-percentage">0%</p>
+              </div>
+              <div class="stat">
+                <h4>Closest Guess</h4>
+                <p id="closest-guess">-</p>
+              </div>
+              <div class="stat">
+                <h4>Wildest Miss</h4>
+                <p id="wildest-miss">-</p>
+              </div>
+            </div>
+            <button id="back-to-guessing" class="secondary-btn" style="display: none;">Back to Guessing</button>
           </div>
         </div>
-        <button id="back-to-guessing" class="secondary-btn" style="display: none;">Back to Guessing</button>
       </div>
       
       <div id="notification" class="notification" style="display: none;"></div>
-      
-      <div id="game-canvas-container">
-        <!-- Stack canvases in the correct z-index order -->
-        <canvas id="shape-cloud" width="400" height="400" data-role="background-shapes"></canvas>
-        <canvas id="heatmap-layer" width="400" height="400" data-role="heatmap"></canvas>
-        <canvas id="interaction-layer" width="400" height="400" data-role="interaction"></canvas>
-      </div>
     </div>
     <script type="module" src="js/index.js"></script>
   </body>
