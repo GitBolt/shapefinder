@@ -30,92 +30,92 @@ export function ActiveGameView({
         grow
         padding="large"
         cornerRadius="large"
-        backgroundColor="#f8fafc"
+        backgroundColor="#f0f4f8"
       >
         <vstack grow alignment="middle center" gap="medium">
-          <text size="xxlarge" weight="bold" color="#0f172a">
+          <text size="xxlarge" weight="bold" color="#1a365d">
             Where's the{" "}
             <text color={gameData.color}>
-              {gameData.shapeType}
+              {typeof(gameData.shapeType) == "string" ? gameData.shapeType : "Shape"}
             </text>?
           </text>
 
           <hstack gap="medium" alignment="center middle" width="100%">
             <vstack
-              backgroundColor="#eff6ff"
+              backgroundColor="#e6f7ff"
               padding="medium"
               cornerRadius="medium"
               grow
             >
-              <text size="xlarge" weight="bold" color="#1e40af">
+              <text size="xlarge" weight="bold" color="#0077cc">
                 {guessCount}
               </text>
-              <text size="small" color="#3b82f6">Guesses</text>
+              <text size="small" color="#0099ff">Guesses</text>
             </vstack>
 
             <vstack
-              backgroundColor="#f0fdf4"
+              backgroundColor="#e6fff0"
               padding="medium"
               cornerRadius="medium"
               grow
             >
-              <text size="xlarge" weight="bold" color="#15803d">
+              <text size="xlarge" weight="bold" color="#00875a">
                 {successRate}%
               </text>
-              <text size="small" color="#22c55e">Success Rate</text>
+              <text size="small" color="#00b371">Success Rate</text>
             </vstack>
 
             {userGuess && (
               <vstack
-                backgroundColor={userGuessResult?.isCorrect ? "#f0fdf4" : "#fff7ed"}
+                backgroundColor={userGuessResult?.isCorrect ? "#e6fff0" : "#fff2e6"}
                 padding="medium"
                 cornerRadius="medium"
                 grow
               >
-                <text weight="bold" color={userGuessResult?.isCorrect ? "#15803d" : "#c2410c"}>
+                <text weight="bold" color={userGuessResult?.isCorrect ? "#00875a" : "#cc5500"}>
                   {userGuessResult?.isCorrect ? "Correct! 🎉" : "Incorrect ❌"}
                 </text>
-                <text size="small" color={userGuessResult?.isCorrect ? "#22c55e" : "#f97316"}>
-                  {userGuess.secondsTaken !== undefined ? `${userGuess.secondsTaken}s` : "Your Guess"}
+                <text size="small" color={userGuessResult?.isCorrect ? "#00b371" : "#ff8c42"}>
+                  {userGuess.secondsTaken !== undefined ? `Your Guess (Took ${userGuess.secondsTaken}s)` : "Your Guess"}
                 </text>
               </vstack>
             )}
 
             <vstack
-              backgroundColor="#f0fdf4"
+              backgroundColor="#e6f0ff"
               padding="medium"
               cornerRadius="medium"
               grow
             >
-              <text size="xlarge" weight="bold" color="#15803d">
+              <text size="xlarge" weight="bold" color="#3366cc">
                 {Math.sqrt(Math.pow(userGuess.x - gameData.x, 2) + Math.pow(userGuess.y - gameData.y, 2)).toFixed(0)}px
               </text>
-              <text size="small" color="#22c55e">Distance from Shape</text>
+              <text size="small" color="#5588ee">Distance from Shape</text>
             </vstack>
           </hstack>
 
           {/* Game Board */}
           <vstack
             backgroundColor="#ffffff"
-            padding="medium"
+            padding="small"
             cornerRadius="medium"
-            width="90%"
+            width="80%"
           >
             <hstack alignment="start middle" gap="small">
-              <text weight="bold" color="#0f172a">Game Board</text>
-              <text size="small" color="#64748b">• Visual Representation</text>
+              <text weight="bold" color="#1a365d">Game Board</text>
+              <text size="small" color="#4a5568">• Visual Representation</text>
             </hstack>
 
             {/* Visual representation of guess vs target */}
             <vstack
               width="100%"
-              height="260px"
-              backgroundColor="#f1f5f9"
-              cornerRadius="small"
-              padding="small"
+              height="280px"
+              backgroundColor="#f5f8fa"
+              cornerRadius="medium"
+              padding="medium"
             >
               <zstack width="100%" height="100%" alignment="middle center">
-                {/* Coordinate axes for reference */}
+                {/* Coordinate grid lines - simplified */}
                 <hstack width="90%" height="1px" backgroundColor="#e2e8f0" alignment="middle center" />
                 <vstack width="1px" height="90%" backgroundColor="#e2e8f0" alignment="middle center" />
 
@@ -128,7 +128,7 @@ export function ActiveGameView({
                   <vstack
                     width="24px"
                     height="24px"
-                    backgroundColor="#3b82f6"
+                    backgroundColor="#4299e1"
                     cornerRadius="full"
                   />
                   <spacer grow />
@@ -143,7 +143,7 @@ export function ActiveGameView({
                   <vstack
                     width="24px"
                     height="24px"
-                    backgroundColor={userGuessResult?.isCorrect ? "#22c55e" : "#ef4444"}
+                    backgroundColor={userGuessResult?.isCorrect ? "#38b2ac" : "#f56565"}
                     cornerRadius="full"
                   />
                   <spacer grow />
@@ -151,25 +151,25 @@ export function ActiveGameView({
               </zstack>
             </vstack>
 
-            <hstack gap="medium" alignment="center middle" padding="small">
+            <hstack gap="medium" alignment="center middle" padding="medium">
               <hstack gap="small" alignment="center middle">
                 <vstack
                   width="14px"
                   height="14px"
-                  backgroundColor={userGuessResult?.isCorrect ? "#22c55e" : "#ef4444"}
+                  backgroundColor={userGuessResult?.isCorrect ? "#38b2ac" : "#f56565"}
                   cornerRadius="full"
                 />
-                <text size="xsmall" color="#334155">Your Guess</text>
+                <text size="xsmall" color="#2d3748">Your Guess</text>
               </hstack>
 
               <hstack gap="small" alignment="center middle">
                 <vstack
                   width="14px"
                   height="14px"
-                  backgroundColor="#3b82f6"
+                  backgroundColor="#4299e1"
                   cornerRadius="full"
                 />
-                <text size="xsmall" color="#334155">Target {gameData.shapeType}</text>
+                <text size="xsmall" color="#2d3748">Target {gameData.shapeType}</text>
               </hstack>
             </hstack>
           </vstack>
@@ -184,58 +184,58 @@ export function ActiveGameView({
       grow
       padding="large"
       cornerRadius="large"
-      backgroundColor="#f8fafc"
+      backgroundColor="#f0f4f8"
     >
       <vstack grow alignment="middle center" gap="medium">
-        <text size="xxlarge" weight="bold" color="#0f172a">
+        <text size="xxlarge" weight="bold" color="#1a365d">
           Where's the{" "}
           <text color={gameData.color}>
             {gameData.shapeType}
           </text>?
         </text>
-        <text size="medium" color="#475569" alignment="middle center">
+        <text size="medium" color="#4a5568" alignment="middle center">
           Find the hidden shape among the others!
         </text>
 
         {/* Game Stats */}
         <hstack gap="medium" alignment="center middle" width="100%">
           <vstack
-            backgroundColor="#eff6ff"
+            backgroundColor="#e6f7ff"
             padding="medium"
             cornerRadius="medium"
             grow
           >
-            <text size="xlarge" weight="bold" color="#1e40af">
+            <text size="xlarge" weight="bold" color="#0077cc">
               {guessCount}
             </text>
-            <text size="small" color="#3b82f6">Guesses</text>
+            <text size="small" color="#0099ff">Guesses</text>
           </vstack>
 
           <vstack
-            backgroundColor="#f0fdf4"
+            backgroundColor="#e6fff0"
             padding="medium"
             cornerRadius="medium"
             grow
           >
-            <text size="xlarge" weight="bold" color="#15803d">
+            <text size="xlarge" weight="bold" color="#00875a">
               {successRate}%
             </text>
-            <text size="small" color="#22c55e">Success Rate</text>
+            <text size="small" color="#00b371">Success Rate</text>
           </vstack>
         </hstack>
 
         {/* Play button */}
         <vstack
-          padding="medium"
-          backgroundColor="#f1f5f9"
+          padding="large"
+          backgroundColor="#ffffff"
           cornerRadius="medium"
           width="100%"
           gap="medium"
         >
-          <text size="medium" weight="bold" color="#0f172a" alignment="middle center">
+          <text size="medium" weight="bold" color="#1a365d" alignment="middle center">
             Ready to play?
           </text>
-          <text size="small" color="#475569" alignment="middle center">
+          <text size="small" color="#4a5568" alignment="middle center">
             Click the button below to find the hidden shape among many others.
           </text>
           <button
