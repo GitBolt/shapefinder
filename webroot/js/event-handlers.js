@@ -4,6 +4,7 @@ export class EventHandlers {
     this.renderer = renderer;
     this.timerInterval = null;
     this.timeRemaining = 10; // 10 seconds countdown
+    this.startTime = null; // Add startTime to track when the timer starts
   }
   
   setupEventListeners() {
@@ -303,6 +304,9 @@ export class EventHandlers {
     // Reset time
     this.timeRemaining = 10;
     
+    // Store start time for calculating seconds taken
+    this.startTime = Date.now();
+    
     // Get timer elements
     const timerProgress = document.getElementById('timer-progress');
     const timerText = document.getElementById('timer-text');
@@ -369,12 +373,20 @@ export class EventHandlers {
     // Clear the timer when a guess is submitted
     this.clearTimer();
     
+    // Calculate seconds taken to guess
+    let secondsTaken = 0; // Default to 0 for instant guesses
+    if (this.startTime) {
+      // Calculate elapsed time in seconds (10 - remaining time)
+      secondsTaken = Math.min(10, Math.round(10 - this.timeRemaining));
+      console.log('Time taken to guess:', secondsTaken, 'seconds');
+    }
+    
     this.game.sendWebViewMessage({
       type: 'recordGuess',
-      data: this.game.userGuess
+      data: {
+        ...this.game.userGuess,
+        secondsTaken: secondsTaken
+      }
     });
-    
-    // Show a submitting notification
-    this.game.showNotification('Submitting your guess...');
   }
 } 

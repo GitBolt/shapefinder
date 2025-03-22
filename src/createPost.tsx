@@ -16,15 +16,29 @@ Devvit.addMenuItem({
       subredditName: subreddit.name,
       // The preview appears while the post loads
       preview: (
-        <vstack height="100%" width="100%" alignment="middle center" backgroundColor="#f7f9fc" padding="large" cornerRadius="large">
+        <vstack height="100%" width="100%" alignment="middle center" backgroundColor="#f8f9ff" padding="large" cornerRadius="large">
           <image 
             url="https://i.imgur.com/wqtUCyq.png"
-            imageWidth={300}
-            imageHeight={100}
+            imageWidth={320}
+            imageHeight={110}
           />
           <spacer size="medium" />
-          <text size="xlarge" weight="bold" color="#1a1a2e">Creating Where's the Shape? Hub...</text>
-          <text size="medium" color="#455a64">Setting up your game center...</text>
+          <text size="xxlarge" weight="bold" color="#1a1a2e">
+            Creating Where's the Shape? Hub...
+          </text>
+          <text size="medium" color="#455a64" alignment="middle center">
+            Setting up your game center...
+          </text>
+          
+          <spacer size="large" />
+          
+          <vstack 
+            backgroundColor="rgba(59, 130, 246, 0.05)"
+            padding="medium"
+            cornerRadius="medium"
+            width="80%"
+          >
+          </vstack>
         </vstack>
       ),
     });

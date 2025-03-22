@@ -31,6 +31,8 @@ export type CanvasConfig = {
 export type GuessData = {
   x: number;
   y: number;
+  secondsTaken?: number;
+  isCorrect?: boolean;
 };
 
 // Combined guess data with user info for the heatmap
@@ -39,6 +41,7 @@ export type HeatmapGuessData = {
   x: number;
   y: number;
   timestamp: number;
+  secondsTaken?: number;
   isCorrect?: boolean;
 };
 

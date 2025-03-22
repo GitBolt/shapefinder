@@ -1,7 +1,8 @@
 import { getColorValue } from './utils.js';
 
 export class GameModes {
-  constructor(elements) {
+  constructor(elements, game) {
+    this.game = game;
     this.gameInstructions = elements.gameInstructions;
     this.hubControls = elements.hubControls;
     this.creatorControls = elements.creatorControls;
@@ -84,38 +85,97 @@ export class GameModes {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
-    this.gameInstructions.textContent = `The hidden ${colorName} ${shapeName} has been revealed! See how everyone did at finding it.`;
+    this.gameInstructions.innerHTML = `<span class="result-reveal">Revealed!</span> The hidden <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> is now visible! See how everyone did.`;
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'none';
     this.guesserControls.style.display = 'none';
     this.resultsControls.style.display = 'flex';
     
+    // Add animation class to the results controls
+    this.resultsControls.classList.add('results-reveal');
+    
+    // Set a timeout to remove the class after animation completes
+    setTimeout(() => {
+      this.resultsControls.classList.remove('results-reveal');
+    }, 1000);
+    
     this.revealedShapeName.textContent = `${colorName} ${shapeName}`;
     this.revealedShapeName.style.fontWeight = 'bold';
     this.revealedShapeName.style.color = getColorValue(hiddenShape.color);
-    this.totalGuessesDisplay.textContent = `Total guesses: ${guessCount}`;
+    
+    // Enhanced display for total guesses
+    this.totalGuessesDisplay.innerHTML = `
+      <div class="guess-result">
+        <span class="guess-icon">👥</span>
+        <div class="guess-data">
+          <span class="guess-label">Total Guesses</span>
+          <span class="guess-value">${guessCount}</span>
+        </div>
+      </div>
+    `;
+    
+    // Show the stats container for overall game results
+    const statsContainer = document.getElementById('stats-container');
+    if (statsContainer) {
+      statsContainer.style.display = 'block';
+    }
   }
   
-  showPersonalResultsMode(hiddenShape, guessCount, isCorrect = false) {
+  showPersonalResultsMode(hiddenShape, guessCount, isCorrect = false, userGuess = null) {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
-    const resultText = isCorrect
-      ? `You found the ${colorName} ${shapeName}! Here's how your guess compares to the hidden shape!`
-      : `Not quite! Here's where the ${colorName} ${shapeName} was actually hidden.`;
+    // Create more engaging result message
+    let resultText;
+    if (isCorrect) {
+      resultText = `<span class="result-success">Great job!</span> You found the ${colorName} ${shapeName}!`;
+    } else {
+      resultText = `<span class="result-miss">Not quite!</span> Here's where the ${colorName} ${shapeName} was hidden.`;
+    }
     
-    this.gameInstructions.textContent = resultText;
+    this.gameInstructions.innerHTML = resultText;
     
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'none';
     this.guesserControls.style.display = 'none';
     this.resultsControls.style.display = 'flex';
     
+    // Add a class to the results controls for animations
+    this.resultsControls.classList.add('results-reveal');
+    
+    // Set a timeout to remove the class after animation completes
+    setTimeout(() => {
+      this.resultsControls.classList.remove('results-reveal');
+    }, 1000);
+    
+    // Enhanced styling for the revealed shape name
     this.revealedShapeName.textContent = `${colorName} ${shapeName}`;
     this.revealedShapeName.style.fontWeight = 'bold';
     this.revealedShapeName.style.color = getColorValue(hiddenShape.color);
-    this.totalGuessesDisplay.textContent = `Total guesses: ${guessCount}`;
+    
+    // Enhanced time display with icon and animated value
+    const secondsTaken = userGuess?.secondsTaken !== undefined ? userGuess.secondsTaken : 0;
+    const speedEmoji = secondsTaken <= 3 ? '🚀' : secondsTaken <= 6 ? '⚡' : '⏱️';
+    const timeColor = isCorrect ? 
+      (secondsTaken <= 3 ? '#2e7d32' : '#1e88e5') : 
+      '#e53935';
+    
+    this.totalGuessesDisplay.innerHTML = `
+      <div class="time-result">
+        <span class="time-icon">${speedEmoji}</span>
+        <div class="time-data">
+          <span class="time-label">Time to find:</span>
+          <span class="time-value" style="color: ${timeColor};">${secondsTaken} seconds</span>
+        </div>
+      </div>
+    `;
+    
+    // Hide the stats container (success rate) in personal results mode
+    const statsContainer = document.getElementById('stats-container');
+    if (statsContainer) {
+      statsContainer.style.display = 'none';
+    }
   }
   
   calculateStats(allGuesses, hiddenShape, closestGuessDisplay, wildestMissDisplay) {

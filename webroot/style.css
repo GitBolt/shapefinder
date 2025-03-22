@@ -821,4 +821,430 @@ p {
 
 .timer-progress-low {
   background-color: #ff0000 !important;
+}
+
+/* Results screen styling */
+#results-controls {
+  background: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+#results-controls::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+  z-index: 1;
+}
+
+#results-controls h3 {
+  font-size: 1.4rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+#results-controls h3::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: var(--accent-1);
+  border-radius: 3px;
+}
+
+#revealed-shape-name {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.5rem;
+  z-index: 1;
+}
+
+#revealed-shape-name::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35%;
+  background-color: rgba(66, 153, 225, 0.15);
+  z-index: -1;
+  border-radius: 4px;
+}
+
+#total-guesses {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  color: #4a5568;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease;
+}
+
+#stats-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem 0;
+  position: relative;
+}
+
+.stat {
+  text-align: center;
+  background: linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  min-width: 180px;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  transition: all 0.3s ease;
+}
+
+.stat::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-1), var(--secondary-color));
+  border-radius: 0 0 10px 10px;
+}
+
+.stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat h4 {
+  font-size: 0.95rem;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat p {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--secondary-color), var(--accent-1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  display: inline-block;
+}
+
+.stat p::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background: var(--accent-2);
+  border-radius: 3px;
+}
+
+#back-to-guessing {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  margin-top: 1.25rem;
+  box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
+  transition: all 0.3s ease;
+}
+
+#back-to-guessing:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(66, 153, 225, 0.4);
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+}
+
+@media (max-width: 768px) {
+  #results-controls {
+    padding: 1.25rem 1rem;
+  }
+  
+  #results-controls h3 {
+    font-size: 1.2rem;
+  }
+  
+  #total-guesses {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .stat {
+    padding: 0.75rem 1.25rem;
+    min-width: 150px;
+  }
+  
+  .stat p {
+    font-size: 1.8rem;
+  }
+}
+
+/* Animation for results screen */
+.results-reveal {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Feedback text styles */
+.result-success {
+  position: relative;
+  display: inline-block;
+  color: #2e7d32;
+  font-weight: 700;
+  padding: 0 0.3rem;
+  z-index: 1;
+}
+
+.result-success::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35%;
+  background: rgba(46, 125, 50, 0.15);
+  z-index: -1;
+  border-radius: 4px;
+}
+
+.result-miss {
+  position: relative;
+  display: inline-block;
+  color: #e53935;
+  font-weight: 700;
+  padding: 0 0.3rem;
+  z-index: 1;
+}
+
+.result-miss::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35%;
+  background: rgba(229, 57, 53, 0.15);
+  z-index: -1;
+  border-radius: 4px;
+}
+
+.result-reveal {
+  position: relative;
+  display: inline-block;
+  color: #805ad5;
+  font-weight: 700;
+  padding: 0 0.3rem;
+  z-index: 1;
+}
+
+.result-reveal::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35%;
+  background: rgba(128, 90, 213, 0.15);
+  z-index: -1;
+  border-radius: 4px;
+}
+
+/* Time result display */
+.time-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(240, 245, 255, 0.8) 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  margin: 1rem 0;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.time-result::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent-1), var(--accent-2));
+  border-radius: 12px 0 0 12px;
+}
+
+.time-icon {
+  font-size: 1.8rem;
+  margin-right: 1rem;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.time-data {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.time-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.time-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  animation: counterAnimation 1s ease-out forwards;
+}
+
+/* Guess results display */
+.guess-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(240, 245, 255, 0.8) 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  margin: 1rem 0;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.guess-result::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent-2), var(--secondary-color));
+  border-radius: 12px 0 0 12px;
+}
+
+.guess-icon {
+  font-size: 1.8rem;
+  margin-right: 1rem;
+  animation: pulse 2s ease infinite;
+}
+
+.guess-data {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.guess-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.guess-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-2);
+  animation: counterAnimation 1s ease-out forwards;
+}
+
+/* Animations */
+@keyframes counterAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .time-result, .guess-result {
+    padding: 0.6rem 1rem;
+    margin: 0.75rem 0;
+  }
+  
+  .time-icon, .guess-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+  }
+  
+  .time-label, .guess-label {
+    font-size: 0.75rem;
+  }
+  
+  .time-value, .guess-value {
+    font-size: 1.25rem;
+  }
 } 
