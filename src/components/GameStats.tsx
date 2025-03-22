@@ -27,7 +27,7 @@ export function GameStats({ guessCount, successRate, userGuess }: GameStatsProps
         <text size="small" color="#455a64">Success Rate</text>
       </vstack>
       
-      {userGuess && userGuess.isCorrect !== undefined && (
+      {userGuess && userGuess.isCorrect !== undefined ? (
         <vstack backgroundColor="#fff8e1" padding="medium" cornerRadius="medium" grow>
           <text weight="bold" color="#ed6c02">Your Guess</text>
           <text size="small" weight="bold" color={userGuess.isCorrect ? "#2e7d32" : "#c62828"}>
@@ -35,7 +35,7 @@ export function GameStats({ guessCount, successRate, userGuess }: GameStatsProps
             {userGuess.secondsTaken !== undefined ? ` ${userGuess.secondsTaken}s` : ""}
           </text>
         </vstack>
-      )}
+      ) : <spacer />}
     </hstack>
   );
 } 

@@ -48,7 +48,7 @@ export function RevealedGameView({
             <text size="small" color="#455a64">Success Rate</text>
           </vstack>
           
-          {userGuess && (
+          {userGuess ? (
             <vstack backgroundColor="#fff8e1" padding="medium" cornerRadius="medium" grow>
               <text weight="bold" color="#ed6c02">Your Guess</text>
               <text size="small" weight="bold" color={userGuess.isCorrect ? "#2e7d32" : "#c62828"}>
@@ -56,7 +56,7 @@ export function RevealedGameView({
                 {userGuess.secondsTaken !== undefined ? ` ${userGuess.secondsTaken}s` : ""}
               </text>
             </vstack>
-          )}
+          ) : <spacer />}
         </hstack>
         
         <spacer size="medium" />
@@ -86,7 +86,7 @@ export function RevealedGameView({
               </hstack>
               
               {/* User guess position marker (if user has guessed) */}
-              {userGuess && (
+              {userGuess ? (
                 <hstack width="100%" height="100%">
                   <spacer 
                     width={`${Math.max(0, Math.min(100, (userGuess.x / canvasConfig.width) * 100))}%`} 
@@ -95,7 +95,7 @@ export function RevealedGameView({
                   <vstack width="24px" height="24px" backgroundColor="#c62828" cornerRadius="full" />
                   <spacer grow />
                 </hstack>
-              )}
+              ) : null}
             </zstack>
           </hstack>
           
@@ -105,19 +105,19 @@ export function RevealedGameView({
               <vstack width="14px" height="14px" backgroundColor="#2e7d32" cornerRadius="full" />
               <text size="xsmall">Target</text>
             </hstack>
-            {userGuess && (
+            {userGuess ? (
               <hstack gap="small" alignment="center middle">
                 <vstack width="14px" height="14px" backgroundColor="#c62828" cornerRadius="full" />
                 <text size="xsmall">Your Guess</text>
               </hstack>
-            )}
-            {userGuess && (
+            ) : null}
+            {userGuess ? (
               <hstack gap="small" alignment="center middle">
                 <text size="xsmall" color="#78909c">
                   Distance: {Math.sqrt(Math.pow(userGuess.x - gameData.x, 2) + Math.pow(userGuess.y - gameData.y, 2)).toFixed(0)} pixels
                 </text>
               </hstack>
-            )}
+            ) : null}
           </hstack>
         </vstack>
         

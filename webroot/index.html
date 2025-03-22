@@ -10,6 +10,17 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loader">
+        <div class="shape-loader square"></div>
+        <div class="shape-loader circle"></div>
+        <div class="shape-loader triangle"></div>
+        <div class="shape-loader star"></div>
+      </div>
+      <p>Loading game...</p>
+    </div>
+    
     <div class="game-container">
       <h1>Where's the Shape?</h1>
       <div id="game-instructions" class="instructions"></div>
@@ -70,8 +81,8 @@
             
             <h3>Size</h3>
             <div class="shape-size-control">
-              <input type="range" id="hub-shape-size" min="10" max="60" value="24" class="size-slider" aria-label="Shape size slider">
-              <span id="hub-shape-size-value">24</span>
+              <input type="range" id="hub-shape-size" min="30" max="60" value="30" class="size-slider" aria-label="Shape size slider">
+              <span id="hub-shape-size-value">30</span>
             </div>
           </div>
           
@@ -260,6 +271,21 @@
           forceInitialButtonDisplay();
           syncButtonVisibility();
         });
+      });
+      
+      // Fallback for loading overlay in case the game initialization doesn't trigger
+      window.addEventListener('load', function() {
+        // Wait a bit before attempting to hide the overlay as a fallback
+        setTimeout(function() {
+          const loadingOverlay = document.getElementById('loading-overlay');
+          if (loadingOverlay && !loadingOverlay.classList.contains('fade-out')) {
+            console.log('Fallback: Hiding loading overlay');
+            loadingOverlay.classList.add('fade-out');
+            setTimeout(() => {
+              loadingOverlay.style.display = 'none';
+            }, 500);
+          }
+        }, 2000); // Give the game 2 seconds to initialize on its own
       });
     </script>
   </body>

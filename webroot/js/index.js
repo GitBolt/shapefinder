@@ -219,6 +219,20 @@ class HiddenShapeGame {
       document.dispatchEvent(event);
       console.log('Dispatched custom event to update button visibility');
     }, 200);
+    
+    // Hide the loading overlay now that the game is initialized
+    this.hideLoadingOverlay();
+  }
+  
+  // Function to hide the loading overlay
+  hideLoadingOverlay() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('fade-out');
+      setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+      }, 500); // Match this with the duration of the fade-out animation
+    }
   }
   
   processDevvitMessage(event) {
