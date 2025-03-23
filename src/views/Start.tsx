@@ -81,7 +81,7 @@ export function Start({
   const blurredSvgString = `
     <svg width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
       <defs>
-        <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+        <filter id="blur" x="-90%" y="-90%" width="200%" height="200%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
         </filter>
       </defs>
@@ -126,7 +126,7 @@ export function Start({
           backgroundColor="rgb(255, 255, 255)"
           padding="large"
           cornerRadius="large"
-          width="60%"
+          width="90%"
           alignment="middle center"
           gap="small"
         >
@@ -137,7 +137,7 @@ export function Start({
           </text>
         </vstack>
 
-        <hstack gap="medium" alignment="center middle" width="60%">
+        <hstack gap="medium" alignment="center middle" width="90%">
           <vstack
             backgroundColor="rgb(0, 132, 219, 0.7)"
             padding="medium"
@@ -169,13 +169,13 @@ export function Start({
           gap="large"
         >
 
-          <text size="xlarge" color="#4a5568" alignment="middle center" width="100%" wrap>
+          <text size="xlarge" color="#4a5568" alignment="middle center" width="100%" wrap weight="bold">
             Click the button below to find the hidden shape among many others!
           </text>
 
           <vstack alignment="middle center" gap="medium">
             <button
-              width="50%"
+              width="90%"
               appearance="primary"
               onPress={() => webView.mount()}
               icon="play-fill"

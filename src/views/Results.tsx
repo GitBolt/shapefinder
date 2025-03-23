@@ -122,20 +122,20 @@ export function Results({
             <text size="small" color="#4a5568">• Game Board</text>
           </hstack>
 
-          <hstack>
-            <vstack padding="medium">
+          <hstack width="100%">
+            <vstack padding="small" width="50%" alignment="middle start">
               <image
                 url={svgDataUri}
-                imageWidth={260}
-                imageHeight={260}
+                imageWidth={200}
+                imageHeight={200}
                 description="Game board showing target and guess positions"
               />
 
-              <hstack gap="medium" alignment="center middle" padding="medium">
+              <hstack gap="medium" alignment="center middle" padding="xsmall">
                 <hstack gap="small" alignment="center middle">
                   <vstack
-                    width="14px"
-                    height="14px"
+                    width="10px"
+                    height="10px"
                     backgroundColor={userGuessResult?.isCorrect ? "#38b2ac" : "#f56565"}
                     cornerRadius="full"
                   />
@@ -144,53 +144,54 @@ export function Results({
 
                 <hstack gap="small" alignment="center middle">
                   <vstack
-                    width="14px"
-                    height="14px"
+                    width="10px"
+                    height="10px"
                     backgroundColor="#4299e1"
                     cornerRadius="full"
                   />
-                  <text size="xsmall" color="#2d3748">Target {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}</text>
+                  <text size="xsmall" color="#2d3748">Target</text>
                 </hstack>
               </hstack>
             </vstack>
 
-            <vstack gap="medium" grow padding='medium'>
+            {/* Stats section */}
+            <vstack gap="medium" grow padding='small' width="60%">
               <vstack
                 backgroundColor={userGuessResult?.isCorrect ? "#e6fff0" : "#fff2e6"}
-                padding="medium"
+                padding="small"
                 cornerRadius="medium"
                 width="100%"
               >
                 <text weight="bold" color={userGuessResult?.isCorrect ? "#00875a" : "#cc5500"}>
                   {userGuessResult?.isCorrect ? "Correct! 🎉" : "Incorrect ❌"}
                 </text>
-                <text size="small" color={userGuessResult?.isCorrect ? "#00b371" : "#ff8c42"}>
+                <text size="medium" color={userGuessResult?.isCorrect ? "#00b371" : "#ff8c42"}>
                   Your Guess
                 </text>
               </vstack>
 
               <vstack
                 backgroundColor="#e6f0ff"
-                padding="medium"
+                padding="small"
                 cornerRadius="medium"
                 width="100%"
               >
                 <text size="large" weight="bold" color="#3366cc">
                   {Math.sqrt(Math.pow(userGuess.x - gameData.x, 2) + Math.pow(userGuess.y - gameData.y, 2)).toFixed(0)}px
                 </text>
-                <text size="small" color="#5588ee">Distance from Shape</text>
+                <text size="medium" color="#5588ee">Distance</text>
               </vstack>
 
               <vstack
                 backgroundColor="#f0e6ff"
-                padding="medium"
+                padding="small"
                 cornerRadius="medium"
                 width="100%"
               >
                 <text size="large" weight="bold" color="#8033cc">
                   {userGuess.secondsTaken !== undefined ? `${userGuess.secondsTaken}s` : "0s"}
                 </text>
-                <text size="small" color="#a366ee">Time Taken</text>
+                <text size="medium" color="#a366ee">Time</text>
               </vstack>
             </vstack>
           </hstack>

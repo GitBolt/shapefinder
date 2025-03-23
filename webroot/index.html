@@ -271,6 +271,33 @@
           forceInitialButtonDisplay();
           syncButtonVisibility();
         });
+        
+        // Handle responsive canvas sizing
+        function resizeCanvases() {
+          const container = document.getElementById('game-canvas-container');
+          if (!container) return;
+          
+          const canvases = container.querySelectorAll('canvas');
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+          
+          canvases.forEach(canvas => {
+            // Update canvas size attributes for smaller screens while maintaining aspect ratio
+            if (window.innerWidth <= 350) {
+              // For very small screens
+              canvas.width = containerWidth;
+              canvas.height = containerWidth; // Keep square aspect ratio
+            } else {
+              // Reset to default for larger screens
+              canvas.width = 350;
+              canvas.height = 350;
+            }
+          });
+        }
+        
+        // Resize canvases on page load and when window is resized
+        window.addEventListener('resize', resizeCanvases);
+        window.addEventListener('load', resizeCanvases);
       });
       
       // Fallback for loading overlay in case the game initialization doesn't trigger

@@ -223,10 +223,10 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
       {/* Guide View */}
       <vstack
         backgroundColor="white"
-        padding="medium"
+        padding="small"
         cornerRadius="large"
         width="100%"
-        gap="medium"
+        gap="small"
       >
         <hstack alignment="center middle" width="100%">
           <text size="xxlarge" weight="bold" color="#1a365d">How to Play</text>
@@ -240,7 +240,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
           </button>
         </hstack>
 
-        <vstack gap="medium" padding="none">
+        <vstack gap="small" padding="none">
           <vstack
             backgroundColor="#e6f7ff"
             padding="small"

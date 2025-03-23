@@ -687,10 +687,101 @@ p {
   }
 }
 
-@media (max-width: 500px) {
+/* Scale down everything for screens below 650px */
+@media (max-width: 650px) {
   .game-container {
-    padding: 0.5rem 0 2rem 0;
-    overflow-x: auto;
+    min-width: 100%;
+    transform: scale(0.9);
+    transform-origin: top center;
+    padding: 0;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .game-layout {
+    min-width: 100%;
+    width: 650px;
+    transform: scale(0.85);
+    transform-origin: top left;
+    margin-bottom: -30px;
+  }
+}
+
+/* Change layout for screens below 500px - vertical arrangement */
+@media (max-width: 500px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .game-container {
+    transform: scale(1);
+    overflow-x: visible;
+    min-width: unset;
+  }
+  
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .game-layout {
+    flex-direction: column;
+    width: 100%;
+    min-width: unset;
+    transform: scale(1);
+    align-items: center;
+    padding-left: 0;
+  }
+  
+  .left-column {
+    width: 100%;
+    max-width: 350px;
+    flex: none;
+  }
+  
+  #game-canvas-container {
+    width: 100%;
+    max-width: 350px;
+    min-width: unset;
+  }
+  
+  .canvas-buttons {
+    width: 100%;
+    max-width: 350px;
+  }
+  
+  .game-controls {
+    width: 100%;
+    max-width: 350px;
+    flex: none;
+    margin-top: 1rem;
+  }
+  
+  .controls-container {
+    width: 100%;
+  }
+}
+
+@media (max-width: 350px) {
+  .game-container {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+  
+  #game-canvas-container {
+    height: 300px;
+  }
+  
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  .controls-container {
+    padding: 0.75rem;
   }
 }
 
