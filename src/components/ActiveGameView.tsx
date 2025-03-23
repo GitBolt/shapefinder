@@ -1,5 +1,5 @@
 import { Devvit } from '@devvit/public-api';
-import type { ShapeData, GuessData, CanvasConfig } from '../message.js';
+import type { ShapeData, GuessData, CanvasConfig, BackgroundShape } from '../message.js';
 
 type ActiveGameViewProps = {
   gameData: ShapeData;
@@ -10,6 +10,42 @@ type ActiveGameViewProps = {
   userGuessResult?: { isCorrect?: boolean };
   webView: any;
 };
+
+/**
+ * Creates an SVG representation of background shapes
+ */
+function createBackgroundShapesSVG(backgroundShapes: BackgroundShape[], svgWidth: number, svgHeight: number, canvasWidth: number, canvasHeight: number) {
+  return backgroundShapes.slice(0, 40).map((shape, index) => {
+    const x = Math.round((shape.x / canvasWidth) * svgWidth);
+    const y = Math.round((shape.y / canvasHeight) * svgHeight);
+    const size = Math.round((shape.size / canvasWidth) * svgWidth);
+    
+    let shapeElement = '';
+    
+    if (shape.shapeType === 'circle') {
+      shapeElement = `<circle cx="${x}" cy="${y}" r="${size/2}" fill="${shape.color}" opacity="${shape.opacity * 0.5}" />`;
+    } else if (shape.shapeType === 'square') {
+      shapeElement = `<rect x="${x - size/2}" y="${y - size/2}" width="${size}" height="${size}" fill="${shape.color}" opacity="${shape.opacity * 0.5}" />`;
+    } else if (shape.shapeType === 'triangle') {
+      const h = size * 0.866; // height of equilateral triangle
+      const points = `${x},${y - h/2} ${x + size/2},${y + h/2} ${x - size/2},${y + h/2}`;
+      shapeElement = `<polygon points="${points}" fill="${shape.color}" opacity="${shape.opacity * 0.5}" />`;
+    } else if (shape.shapeType === 'star') {
+      // Simple 5-point star
+      const outerRadius = size/2;
+      const innerRadius = outerRadius * 0.4;
+      let points = '';
+      for (let i = 0; i < 10; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = Math.PI * i / 5;
+        points += `${x + radius * Math.sin(angle)},${y - radius * Math.cos(angle)} `;
+      }
+      shapeElement = `<polygon points="${points}" fill="${shape.color}" opacity="${shape.opacity * 0.5}" />`;
+    }
+    
+    return shapeElement;
+  }).join('');
+}
 
 /**
  * View for active (ongoing) games
@@ -78,21 +114,19 @@ export function ActiveGameView({
     return (
       <vstack
         grow
-        padding="large"
+        padding="medium"
         cornerRadius="large"
         backgroundColor="#f0f4f8"
       >
         <vstack grow alignment="middle center" gap="medium">
+
           <text size="xxlarge" weight="bold" color="#1a365d">
-            Where's the{" "}
-            <text color={gameData.color}>
-              {typeof (gameData.shapeType) == "string" ? gameData.shapeType : "Shape"}
-            </text>?
+            Where's the {gameData.color.charAt(0).toUpperCase() + gameData.color.slice(1)} {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}?
           </text>
 
           <hstack gap="medium" alignment="center middle" width="100%">
             <vstack
-              backgroundColor="#4a6fa1"
+              backgroundColor="#0084db"
               padding="medium"
               cornerRadius="medium"
               grow
@@ -104,7 +138,7 @@ export function ActiveGameView({
             </vstack>
 
             <vstack
-              backgroundColor="#4c7f69"
+              backgroundColor="#1ba300"
               padding="medium"
               cornerRadius="medium"
               grow
@@ -124,8 +158,8 @@ export function ActiveGameView({
             width="100%"
           >
             <hstack alignment="start middle" gap="small">
-              <text weight="bold" color="#1a365d">Game Board</text>
-              <text size="small" color="#4a5568">• Guess Representation</text>
+              <text weight="bold" color="#1a365d">Your Guess</text>
+              <text size="small" color="#4a5568">• Game Board</text>
             </hstack>
 
             <hstack>
@@ -156,7 +190,7 @@ export function ActiveGameView({
                       backgroundColor="#4299e1"
                       cornerRadius="full"
                     />
-                    <text size="xsmall" color="#2d3748">Target {gameData.shapeType}</text>
+                    <text size="xsmall" color="#2d3748">Target {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}</text>
                   </hstack>
                 </hstack>
               </vstack>
@@ -211,29 +245,104 @@ export function ActiveGameView({
     );
   }
 
-  // If user hasn't guessed yet, show play prompt
-  return (
-    <vstack
-      grow
-      padding="large"
-      cornerRadius="large"
-      backgroundColor="#f0f4f8"
-    >
-      <vstack grow alignment="middle center" gap="medium">
-        <text size="xxlarge" weight="bold" color="#1a365d">
-          Where's the{" "}
-          <text color={gameData.color}>
-            {gameData.shapeType}
-          </text>?
-        </text>
-        <text size="medium" color="#4a5568" alignment="middle center">
-          Find the hidden shape among the others!
-        </text>
+  // Create blurred background shapes SVG
+  const svgWidth = 280;
+  const svgHeight = 280;
+  
+  // Generate grid lines for SVG
+  let gridLines = '';
+  for (let i = 0; i < 10; i++) {
+    const pos = (i * svgWidth / 10);
+    gridLines += `<line x1="${pos}" y1="0" x2="${pos}" y2="${svgHeight}" stroke="#e2e8f0" stroke-width="0.5" opacity="0.5" />`;
+    gridLines += `<line x1="0" y1="${pos}" x2="${svgWidth}" y2="${pos}" stroke="#e2e8f0" stroke-width="0.5" opacity="0.5" />`;
+  }
+  
+  // Generate background shapes SVG
+  let backgroundShapesSvg = '';
+  if (canvasConfig && canvasConfig.backgroundShapes) {
+    backgroundShapesSvg = createBackgroundShapesSVG(
+      canvasConfig.backgroundShapes, 
+      svgWidth, 
+      svgHeight, 
+      canvasConfig.width, 
+      canvasConfig.height
+    );
+  }
+  
+  // Create blurred SVG with background shapes
+  const blurredSvgString = `
+    <svg width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <defs>
+        <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
+        </filter>
+      </defs>
+      
+      <rect width="100%" height="100%" fill="#f5f8fa" />
+      
+      <!-- Grid lines -->
+      <line x1="${svgWidth / 2}" y1="0" x2="${svgWidth / 2}" y2="${svgHeight}" stroke="#e2e8f0" stroke-width="1" />
+      <line x1="0" y1="${svgHeight / 2}" x2="${svgWidth}" y2="${svgHeight / 2}" stroke="#e2e8f0" stroke-width="1" />
+      
+      <!-- Fine grid lines -->
+      ${gridLines}
+      
+      <!-- Background shapes with blur -->
+      <g filter="url(#blur)">
+        ${backgroundShapesSvg}
+      </g>
+    </svg>
+  `;
+  
+  // Convert SVG to data URI
+  const blurredSvgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(blurredSvgString)}`;
 
-        {/* Game Stats */}
+  // If user hasn't guessed yet, show play prompt with blurred game board
+  return (
+    <zstack width="100%" height="100%" alignment="middle center" grow cornerRadius="large">
+      {/* Blurred game preview as background - using full container */}
+      <image
+        url={blurredSvgDataUri}
+        imageWidth={Math.max(500, svgWidth * 4)}
+        imageHeight={Math.max(500, svgHeight * 4)}
+        description="Blurred preview of game board with shapes"
+      />
+      
+      {/* Semi-transparent overlay */}
+      <vstack
+        width="100%"
+        height="100%"
+        backgroundColor="rgba(240, 244, 248, 0.1)"
+      />
+      
+      {/* Content section */}
+      <vstack
+        padding="large"
+        gap="medium"
+        alignment="middle center"
+        width="100%"
+      >
+        <vstack
+          backgroundColor="rgba(240, 244, 248, 0.6)"
+          padding="medium"
+          cornerRadius="large"
+          width="100%"
+          alignment="middle center"
+          gap="small"
+        >
+          <text size="xxlarge" weight="bold" color="#1a365d">
+            Where's the{" "}
+            {gameData.color.charAt(0).toUpperCase() + gameData.color.slice(1)}{" "}
+            {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}?
+          </text>
+          <text size="medium" color="#4a5568" alignment="middle center">
+            Find the hidden shape among the others!
+          </text>
+        </vstack>
+
         <hstack gap="medium" alignment="center middle" width="100%">
           <vstack
-            backgroundColor="#4a6fa1"
+            backgroundColor="rgba(74, 111, 161, 0.9)"
             padding="medium"
             cornerRadius="medium"
             grow
@@ -245,7 +354,7 @@ export function ActiveGameView({
           </vstack>
 
           <vstack
-            backgroundColor="#4c7f69"
+            backgroundColor="rgba(76, 127, 105, 0.9)"
             padding="medium"
             cornerRadius="medium"
             grow
@@ -257,10 +366,9 @@ export function ActiveGameView({
           </vstack>
         </hstack>
 
-        {/* Play button */}
         <vstack
           padding="large"
-          backgroundColor="#ffffff"
+          backgroundColor="rgba(255, 255, 255, 0.0)"
           cornerRadius="medium"
           width="100%"
           gap="medium"
@@ -281,6 +389,6 @@ export function ActiveGameView({
           </button>
         </vstack>
       </vstack>
-    </vstack>
+    </zstack>
   );
 } 

@@ -8,31 +8,27 @@ import type { Context } from '@devvit/public-api';
 export function HubView({ webView, context }: { webView: any, context: Context }) {
   const [showingStats, setShowingStats] = useState(false);
   const [showingGuide, setShowingGuide] = useState(false);
-  
-  // Fetch actual stats from Redis using the global counters
+
+  // Fetch stats from Redis using the global counters
   const [gameStats] = useState<{
     totalGames: number;
     totalGuesses: number;
     successRate: number;
   }>(async () => {
     try {
-      // Get the total games created counter
       const totalGamesStr = await context.redis.get('hiddenshape_total_games');
       const totalGames = totalGamesStr ? parseInt(totalGamesStr) : 0;
-      
-      // Get the total guesses counter
+
       const totalGuessesStr = await context.redis.get('hiddenshape_total_guesses');
       const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
-      
-      // Get the total correct guesses for calculating success rate
+
       const totalCorrectGuessesStr = await context.redis.get('hiddenshape_total_correct_guesses');
       const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
-      
-      // Calculate success rate
-      const successRate = totalGuesses > 0 
-        ? Math.round((totalCorrectGuesses / totalGuesses) * 100) 
+
+      const successRate = totalGuesses > 0
+        ? Math.round((totalCorrectGuesses / totalGuesses) * 100)
         : 0;
-      
+
       return {
         totalGames,
         totalGuesses,
@@ -49,158 +45,194 @@ export function HubView({ webView, context }: { webView: any, context: Context }
   });
 
   const renderMainView = () => (
-    <vstack grow alignment="middle center">
-      {/* Logo and Title */}
-      <image 
-        url="https://i.imgur.com/wqtUCyq.png"
-        imageWidth={320}
-        imageHeight={110}
+    <zstack width="100%" height="100%" alignment='center middle'>
+      {/* Background image layer */}
+      <image
+        imageHeight={1024}
+        imageWidth={1500}
+        height="100%"
+        width="100%"
+        url="home_bg.png"
+        description="Box line background"
+        resizeMode="cover"
       />
-      
-      <text size="xxlarge" weight="bold" color="#1a1a2e">
-        Where's the Shape?
-      </text>
-      
-      <text size="large" color="#455a64" alignment="middle center">
-        A fun game of finding hidden shapes among many others
-      </text>
-      
-      <spacer size="large" />
-      
-      {/* Action Buttons */}
-      <hstack gap="medium">
-        <button 
-          appearance="primary"
-          onPress={() => webView.mount()}
-        >
-          Create Game
-        </button>
-        <button 
-          appearance="secondary"
-          onPress={() => setShowingStats(true)}
-        >
-          Game Stats
-        </button>
-        <button 
-          appearance="secondary"
-          onPress={() => setShowingGuide(true)}
-        >
-          Guide
-        </button>
-      </hstack>
-      
-      <spacer size="large" />
-      
-      {/* Description Box */}
-      <vstack 
-        backgroundColor="rgba(59, 130, 246, 0.05)"
-        padding="medium"
-        cornerRadius="medium"
-        width="80%"
+
+      {/* Content layer */}
+      <vstack
+        grow
+        alignment="middle center"
       >
-        <text 
-          size="small" 
-          color="#64748b"
+        <image
+          imageHeight={50}
+          imageWidth={250}
+          height="100%"
+          width="100%"
+          url="title_text.png"
+          description="Title text"
+          resizeMode="fit"
+        />
+        <vstack
+          width="80%"
           alignment="middle center"
         >
-          Create a new game by hiding a shape among many others!
-        </text>
+
+          <text size="xlarge" color="#8A56E8" alignment="center top" weight="bold" wrap width="100%">
+            Find a hidden shape amongst other shapes!
+          </text>
+        </vstack>
+
+        <spacer size="large" />
+
+        {/* Action Buttons */}
+        <vstack gap="medium" width="70%">
+          <vstack
+            backgroundColor="#007AFF"
+            width="100%"
+            alignment="middle center"
+            padding="medium"
+            cornerRadius="full"
+            onPress={() => webView.mount()}
+          >
+            <hstack width="100%" alignment="middle center">
+              <text color="white" weight="bold" size="large">
+                Create Game
+              </text>
+            </hstack>
+          </vstack>
+
+          <vstack
+            backgroundColor="white"
+            width="100%"
+            alignment="middle center"
+            padding="medium"
+            cornerRadius="full"
+            onPress={() => setShowingGuide(true)}
+            borderColor="#007AFF"
+          >
+            <hstack width="100%" alignment="middle center">
+              <text color="#007AFF" weight="bold" size="large">
+                Guide
+              </text>
+            </hstack>
+          </vstack>
+
+          <vstack
+            backgroundColor="white"
+            width="100%"
+            alignment="middle center"
+            padding="medium"
+            cornerRadius="full"
+            onPress={() => setShowingStats(true)}
+            borderColor="#007AFF"
+
+          >
+            <hstack width="100%" alignment="middle center">
+              <text color="#007AFF" weight="bold" size="large">
+                Game Stats
+              </text>
+            </hstack>
+          </vstack>
+        </vstack>
+
       </vstack>
-    </vstack>
+    </zstack>
   );
 
   const renderStatsView = () => (
-    <vstack grow alignment="middle center">
-      {/* Stats View */}
-      <vstack 
-        backgroundColor="white" 
-        padding="large" 
-        cornerRadius="large" 
-        width="90%"
-        gap="medium"
-      >
-        <hstack alignment="center middle" width="100%">
-          <text size="large" weight="bold" color="#1a365d">Game Statistics</text>
-          <spacer grow />
-          <button 
-            appearance="secondary" 
-            size="small" 
-            onPress={() => setShowingStats(false)}
-          >
-            Back
-          </button>
-        </hstack>
 
-        <vstack gap="medium" padding="small">
-          <hstack gap="medium" alignment="center middle" width="100%">
-            <vstack
-              backgroundColor="#e6f7ff"
-              padding="medium"
-              cornerRadius="medium"
-              grow
-            >
-              <text size="xlarge" weight="bold" color="#0077cc">
-                {gameStats.totalGames}
-              </text>
-              <text size="small" color="#0099ff">Total Games Created</text>
-            </vstack>
+      <vstack grow alignment="middle center">
 
-            <vstack
-              backgroundColor="#e6fff0"
-              padding="medium"
-              cornerRadius="medium"
-              grow
+
+        {/* Stats View */}
+        <vstack
+          backgroundColor="white"
+          padding="large"
+          cornerRadius="large"
+          width="100%"
+          gap="medium"
+        >
+          <hstack alignment="center middle" width="100%">
+            <text size="xxlarge" weight="bold" color="#1a365d">Game Statistics</text>
+            <spacer grow />
+            <button
+              appearance="secondary"
+              size="large"
+              onPress={() => setShowingStats(false)}
             >
-              <text size="xlarge" weight="bold" color="#00875a">
-                {gameStats.totalGuesses}
-              </text>
-              <text size="small" color="#00b371">Total Guesses Made</text>
-            </vstack>
+              Back
+            </button>
           </hstack>
 
-          <vstack 
-            backgroundColor="#fff2e6"
-            padding="medium"
-            cornerRadius="medium"
-          >
-            <text size="medium" weight="bold" color="#cc5500" alignment="middle center">
-              Average Success Rate
-            </text>
-            <text size="xxlarge" weight="bold" color="#ff8c42" alignment="middle center">
-              {gameStats.successRate}%
-            </text>
-          </vstack>
+          <vstack gap="medium" padding="small">
+            <hstack gap="medium" alignment="center middle" width="100%">
+              <vstack
+                backgroundColor="#e6f7ff"
+                padding="medium"
+                cornerRadius="medium"
+                grow
+              >
+                <text size="xlarge" weight="bold" color="#0077cc" width="100%" wrap>
+                  {gameStats.totalGames}
+                </text>
+                <text size="small" color="#0099ff" width="100%" wrap>Total Games Created</text>
+              </vstack>
 
-          <vstack 
-            backgroundColor="#e6f0ff"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <text size="xsmall" color="#3366cc" alignment="middle center">
-              Stats are calculated in real-time across all games
-            </text>
+              <vstack
+                backgroundColor="#e6fff0"
+                padding="medium"
+                cornerRadius="medium"
+                grow
+              >
+                <text size="xlarge" weight="bold" color="#00875a" width="100%" wrap>
+                  {gameStats.totalGuesses}
+                </text>
+                <text size="small" color="#00b371" width="100%" wrap>Total Guesses Made</text>
+              </vstack>
+            </hstack>
+
+            <vstack
+              backgroundColor="#fff2e6"
+              padding="medium"
+              cornerRadius="medium"
+            >
+              <text size="medium" weight="bold" color="#cc5500" alignment="middle center" width="100%" wrap>
+                Average Success Rate
+              </text>
+              <text size="xxlarge" weight="bold" color="#ff8c42" alignment="middle center" width="100%" wrap>
+                {gameStats.successRate}%
+              </text>
+            </vstack>
+
+            <vstack
+              backgroundColor="#e6f0ff"
+              padding="small"
+              cornerRadius="medium"
+            >
+              <text size="medium" color="#3366cc" alignment="middle center" width="100%" wrap>
+                Stats are calculated in real-time across all games
+              </text>
+            </vstack>
           </vstack>
         </vstack>
       </vstack>
-    </vstack>
   );
-  
+
   const renderGuideView = () => (
     <vstack grow alignment="middle center">
       {/* Guide View */}
-      <vstack 
-        backgroundColor="white" 
-        padding="large" 
-        cornerRadius="large" 
-        width="90%"
+      <vstack
+        backgroundColor="white"
+        padding="medium"
+        cornerRadius="large"
+        width="100%"
         gap="medium"
       >
         <hstack alignment="center middle" width="100%">
-          <text size="large" weight="bold" color="#1a365d">How to Play</text>
+          <text size="xxlarge" weight="bold" color="#1a365d">How to Play</text>
           <spacer grow />
-          <button 
-            appearance="secondary" 
-            size="small" 
+          <button
+            appearance="secondary"
+            size="large"
             onPress={() => setShowingGuide(false)}
           >
             Back
@@ -208,99 +240,94 @@ export function HubView({ webView, context }: { webView: any, context: Context }
         </hstack>
 
         <vstack gap="medium" padding="small">
-          <vstack 
+          <vstack
             backgroundColor="#e6f7ff"
-            padding="medium"
+            padding="small"
             cornerRadius="medium"
           >
             <hstack gap="small" alignment="start top" width="100%">
               <text size="medium" weight="bold" color="#0077cc">1.</text>
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#0077cc">Create a Game</text>
-                <text 
-                  size="small" 
+                <text
+                  size="medium"
                   color="#334155"
                   alignment="start"
+                  width="100%"
+                  wrap
                 >
                   Click "Create Game" to design your own challenge by placing a hidden shape on the canvas.
                 </text>
               </vstack>
             </hstack>
           </vstack>
-          
-          <vstack 
+
+          <vstack
             backgroundColor="#e6fff0"
-            padding="medium"
+            padding="small"
             cornerRadius="medium"
           >
             <hstack gap="small" alignment="start top" width="100%">
               <text size="medium" weight="bold" color="#00875a">2.</text>
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#00875a">Share with Friends</text>
-                <text 
-                  size="small" 
+                <text
+                    size="medium"
                   color="#334155"
                   alignment="start"
+                  width="100%"
+                  wrap
                 >
                   When your game is created, share the link with friends so they can try to find your hidden shape.
                 </text>
               </vstack>
             </hstack>
           </vstack>
-          
-          <vstack 
+
+          <vstack
             backgroundColor="#fff2e6"
-            padding="medium"
+            padding="small"
             cornerRadius="medium"
           >
             <hstack gap="small" alignment="start top" width="100%">
               <text size="medium" weight="bold" color="#cc5500">3.</text>
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#cc5500">Find the Shape</text>
-                <text 
-                  size="small" 
+                <text
+                  size="medium"
                   color="#334155"
                   alignment="start"
+                  width="100%"
+                  wrap
                 >
                   When playing, click anywhere on the canvas where you think the shape is hidden. You get one guess per game!
                 </text>
               </vstack>
             </hstack>
           </vstack>
-          
-          <vstack 
+
+          <vstack
             backgroundColor="#e6f0ff"
-            padding="medium"
+            padding="small"
             cornerRadius="medium"
           >
             <hstack gap="small" alignment="start top" width="100%">
               <text size="medium" weight="bold" color="#3366cc">4.</text>
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#3366cc">See Results</text>
-                <text 
-                  size="small" 
+                <text
+                  size="medium"
                   color="#334155"
                   alignment="start"
+                  width="100%"
+                  wrap
                 >
                   After guessing, you'll see how close you were and whether you found the shape! The game will show you the distance from your guess to the actual location.
                 </text>
               </vstack>
             </hstack>
           </vstack>
-          
-          <vstack 
-            backgroundColor="rgba(59, 130, 246, 0.05)"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <text 
-              size="small" 
-              color="#64748b" 
-              alignment="middle center"
-            >
-              Have fun creating and playing Where's the Shape!
-            </text>
-          </vstack>
+
         </vstack>
       </vstack>
     </vstack>
@@ -308,9 +335,9 @@ export function HubView({ webView, context }: { webView: any, context: Context }
 
   return (
     <vstack grow padding="large" cornerRadius="large" backgroundColor="#f8f9ff">
-      {showingStats ? renderStatsView() : 
-       showingGuide ? renderGuideView() : 
-       renderMainView()}
+      {showingStats ? renderStatsView() :
+        showingGuide ? renderGuideView() :
+          renderMainView()}
     </vstack>
   );
 } 
