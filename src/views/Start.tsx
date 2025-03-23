@@ -130,7 +130,7 @@ export function Start({
           alignment="middle center"
           gap="small"
         >
-          <text size="xxlarge" weight="bold" color="#1a365d">
+          <text size="xxlarge" weight="bold" color="#1a365d" width="100%" wrap>
             Where's the{" "}
             {gameData.color.charAt(0).toUpperCase() + gameData.color.slice(1)}{" "}
             {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}?
