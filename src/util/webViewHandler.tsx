@@ -22,27 +22,57 @@ export async function handleWebViewMessage(
 ) {
   switch (message.type) {
     case 'webViewReady':
-      // Get user's previous guess if available
-      const userGuessData = await context.redis.get(`hiddenshape_user_${state.postId}_${state.username}`);
-      const userGuess = userGuessData ? JSON.parse(userGuessData) : null;
+      // Use caching for userGuess data to avoid repeated lookups
+      const userGuessKey = `hiddenshape_user_${state.postId}_${state.username}`;
       
-      // Calculate game stats if available
+      // Get canvas configuration and user guess in parallel
+      const [cachedUserGuessData, canvasConfigData] = await Promise.all([
+        // Cache the user's guess data for 5 minutes
+        context.cache(
+          async () => {
+            const data = await context.redis.get(userGuessKey);
+            return data ? JSON.parse(data) : null;
+          },
+          {
+            key: `cache_${userGuessKey}`,
+            ttl: 5 * 60 * 1000, // 5 minutes
+          }
+        ),
+        // Cache the canvas config for 30 minutes (it rarely changes)
+        context.cache(
+          async () => {
+            const data = await context.redis.get(`hiddenshape_canvas_${state.postId}`);
+            return data ? JSON.parse(data) : undefined;
+          },
+          {
+            key: `cache_canvas_${state.postId}`,
+            ttl: 30 * 60 * 1000, // 30 minutes
+          }
+        )
+      ]);
+      
+      // Only calculate stats if needed (not hub post and has guesses)
       let stats = undefined;
       if (!state.isHubPost && state.guessCount > 0) {
-        const guessesJson = await context.redis.get(`hiddenshape_allguesses_${state.postId}`);
-        const allGuesses = guessesJson ? JSON.parse(guessesJson) : [];
-        const correctGuesses = allGuesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
-        
-        stats = {
-          correctGuesses,
-          totalGuesses: state.guessCount,
-          successRate: Math.round((correctGuesses / state.guessCount) * 100)
-        };
+        // Cache the guess statistics for 1 minute
+        stats = await context.cache(
+          async () => {
+            const guessesJson = await context.redis.get(`hiddenshape_allguesses_${state.postId}`);
+            const allGuesses = guessesJson ? JSON.parse(guessesJson) : [];
+            const correctGuesses = allGuesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
+            
+            return {
+              correctGuesses,
+              totalGuesses: state.guessCount,
+              successRate: Math.round((correctGuesses / state.guessCount) * 100)
+            };
+          },
+          {
+            key: `cache_stats_${state.postId}`,
+            ttl: 60 * 1000, // 1 minute
+          }
+        );
       }
-      
-      // Get canvas configuration
-      const canvasConfigData = await context.redis.get(`hiddenshape_canvas_${state.postId}`);
-      const canvasConfig = canvasConfigData ? JSON.parse(canvasConfigData) : undefined;
       
       // Send initial data to the web view
       webView.postMessage({
@@ -50,12 +80,12 @@ export async function handleWebViewMessage(
         data: {
           username: state.username,
           gameData: state.gameData,
-          canvasConfig,
+          canvasConfig: canvasConfigData,
           isRevealed: state.isRevealed,
           guessCount: state.guessCount,
           postId: state.postId,
           isHub: state.isHubPost,
-          userGuess: userGuess?.x !== undefined ? userGuess : undefined,
+          userGuess: cachedUserGuessData?.x !== undefined ? cachedUserGuessData : undefined,
           stats
         },
       });
@@ -84,40 +114,49 @@ export async function handleWebViewMessage(
         postId: gamePost.id,  // Use the new post ID
       };
       
-      // Store shape data in Redis
-      await context.redis.set(
-        `hiddenshape_data_${gamePost.id}`,
-        JSON.stringify(shapeData)
-      );
+      // Store multiple pieces of data in Redis in parallel
+      await Promise.all([
+        // Store shape data
+        context.redis.set(
+          `hiddenshape_data_${gamePost.id}`,
+          JSON.stringify(shapeData)
+        ),
+        
+        // Store canvas configuration
+        context.redis.set(
+          `hiddenshape_canvas_${gamePost.id}`,
+          JSON.stringify(message.canvasConfig)
+        ),
+        
+        // Initialize guess count
+        context.redis.set(
+          `hiddenshape_guesscount_${gamePost.id}`,
+          "0"
+        ),
+        
+        // Initialize empty guesses array
+        context.redis.set(
+          `hiddenshape_allguesses_${gamePost.id}`,
+          "[]"
+        )
+      ]);
       
-      // Store canvas configuration in Redis
-      await context.redis.set(
-        `hiddenshape_canvas_${gamePost.id}`,
-        JSON.stringify(message.canvasConfig)
-      );
+      // Update global games list and count (also in parallel)
+      const [gamesListJson, totalGamesStr] = await Promise.all([
+        context.redis.get('hiddenshape_games_list'),
+        context.redis.get('hiddenshape_total_games')
+      ]);
       
-      // Initialize guess count for the new post
-      await context.redis.set(
-        `hiddenshape_guesscount_${gamePost.id}`,
-        "0"
-      );
-      
-      // Initialize empty guesses array for the new post
-      await context.redis.set(
-        `hiddenshape_allguesses_${gamePost.id}`,
-        "[]"
-      );
-      
-      // ADDITION: Track this game in the global games list
-      const gamesListJson = await context.redis.get('hiddenshape_games_list');
       const gamesList = gamesListJson ? JSON.parse(gamesListJson) : [];
       gamesList.push(gamePost.id);
-      await context.redis.set('hiddenshape_games_list', JSON.stringify(gamesList));
       
-      // ADDITION: Increment total game count
-      const totalGamesStr = await context.redis.get('hiddenshape_total_games');
       const totalGames = totalGamesStr ? parseInt(totalGamesStr) : 0;
-      await context.redis.set('hiddenshape_total_games', (totalGames + 1).toString());
+      
+      // Update global counters in parallel
+      await Promise.all([
+        context.redis.set('hiddenshape_games_list', JSON.stringify(gamesList)),
+        context.redis.set('hiddenshape_total_games', (totalGames + 1).toString())
+      ]);
       
       // Notify the web view that the game was created
       webView.postMessage({
@@ -168,35 +207,7 @@ export async function handleWebViewMessage(
       // Consider it correct if within 15 pixels of target center
       const isCorrect = distance <= 15;
 
-      // Save user's guess
-      await context.redis.set(
-        `hiddenshape_user_${state.postId}_${state.username}`,
-        JSON.stringify({
-          ...message.data,
-          isCorrect
-        })
-      );
-      
-      // Increment guess count
-      const newCount = state.guessCount + 1;
-      await context.redis.set(
-        `hiddenshape_guesscount_${state.postId}`,
-        newCount.toString()
-      );
-
-      // ADDITION: Increment total guesses count globally
-      const totalGuessesStr = await context.redis.get('hiddenshape_total_guesses');
-      const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
-      await context.redis.set('hiddenshape_total_guesses', (totalGuesses + 1).toString());
-      
-      // ADDITION: Increment total correct guesses if this guess was correct
-      if (isCorrect) {
-        const totalCorrectGuessesStr = await context.redis.get('hiddenshape_total_correct_guesses');
-        const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
-        await context.redis.set('hiddenshape_total_correct_guesses', (totalCorrectGuesses + 1).toString());
-      }
-
-      // Add user's guess to the list of all guesses for the heatmap
+      // Prepare the new guess object
       const newGuess: HeatmapGuessData = {
         username: state.username,
         x: message.data.x,
@@ -206,15 +217,52 @@ export async function handleWebViewMessage(
         isCorrect
       };
       
-      // Store guesses as a JSON array in Redis
-      const updatedGuesses = [...state.allGuesses, newGuess];
-      state.setAllGuesses(updatedGuesses);
+      // Prepare user's guess data
+      const userGuessData = {
+        ...message.data,
+        isCorrect
+      };
       
-      // Save updated guesses list
-      await context.redis.set(
-        `hiddenshape_allguesses_${state.postId}`,
-        JSON.stringify(updatedGuesses)
-      );
+      // Updated guess list
+      const updatedGuesses = [...state.allGuesses, newGuess];
+      
+      // Update everything in parallel
+      await Promise.all([
+        // Save user's guess
+        context.redis.set(
+          `hiddenshape_user_${state.postId}_${state.username}`,
+          JSON.stringify(userGuessData)
+        ),
+        
+        // Increment guess count
+        context.redis.set(
+          `hiddenshape_guesscount_${state.postId}`,
+          (state.guessCount + 1).toString()
+        ),
+        
+        // Save updated guesses list
+        context.redis.set(
+          `hiddenshape_allguesses_${state.postId}`,
+          JSON.stringify(updatedGuesses)
+        ),
+        
+        // Update global counters
+        context.redis.get('hiddenshape_total_guesses')
+          .then(totalGuessesStr => {
+            const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
+            return context.redis.set('hiddenshape_total_guesses', (totalGuesses + 1).toString());
+          }),
+        
+        // Update correct guesses counter if applicable
+        isCorrect ? context.redis.get('hiddenshape_total_correct_guesses')
+          .then(totalCorrectGuessesStr => {
+            const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
+            return context.redis.set('hiddenshape_total_correct_guesses', (totalCorrectGuesses + 1).toString());
+          }) : Promise.resolve()
+      ]);
+      
+      // Update local state
+      state.setAllGuesses(updatedGuesses);
 
       // Now immediately show results to the user after guessing
       webView.postMessage({
@@ -236,10 +284,6 @@ export async function handleWebViewMessage(
           }
         }
       });
-
-      // Removed the forced refresh that was causing the page reload
-      // Instead, we'll rely on the client-side JS to update the view
-      // This allows users to see their results immediately without a page reload
       break;
       
     case 'revealShape':
@@ -254,15 +298,13 @@ export async function handleWebViewMessage(
         'true'
       );
       
-      // Get all guesses for the heatmap
-      const allGuessesForHeatmap = await context.redis.get(
-        `hiddenshape_allguesses_${state.postId}`
-      );
+      // Get user's own guess and all guesses in parallel
+      const [allGuessesForHeatmap, userOwnGuessData] = await Promise.all([
+        context.redis.get(`hiddenshape_allguesses_${state.postId}`),
+        context.redis.get(`hiddenshape_user_${state.postId}_${state.username}`)
+      ]);
       
       const guesses = allGuessesForHeatmap ? JSON.parse(allGuessesForHeatmap) : [];
-      
-      // Get user's own guess if available
-      const userOwnGuessData = await context.redis.get(`hiddenshape_user_${state.postId}_${state.username}`);
       const userOwnGuess = userOwnGuessData ? JSON.parse(userOwnGuessData) : null;
       
       // Calculate game stats

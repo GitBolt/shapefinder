@@ -14,62 +14,77 @@ Devvit.configure({
   redis: true,
 });
 
-
 Devvit.addCustomPostType({
   name: 'Shape Seeker Game Hub',
   height: 'tall',
   render: (context) => {
-
-    const [username] = useState<string>(async () => {
-      return (await context.reddit.getCurrentUsername()) ?? 'anon';
-    });
-
-    const [postTitle] = useState<string>(async () => {
-      const post = await context.reddit.getPostById(context.postId ?? '');
-      return post?.title ?? '';
-    });
-
-    // Check if this is a hub post
-    const isHubPost = postTitle === 'Shape Seeker Game Hub';
-
-    // Only load game data if not a hub post
-    const [gameData] = useState<ShapeData | null>(async () => {
-      if (isHubPost) return null;
+    // For strongly typed data, we'll use separate variables that get populated from async state
+    const [gameInfo] = useState(async () => {
+      // Check if username and post title can be fetched in parallel
+      const [username, postInfo] = await Promise.all([
+        context.reddit.getCurrentUsername().then(name => name ?? 'anon'),
+        context.reddit.getPostById(context.postId ?? '').then(post => ({
+          title: post?.title ?? '',
+          isHubPost: post?.title === 'Shape Seeker Game Hub'
+        }))
+      ]);
       
-      const hiddenShapeData = await context.redis.get(`hiddenshape_data_${context.postId}`);
-      return hiddenShapeData ? JSON.parse(hiddenShapeData) : null;
-    });
-
-    // Load canvas configuration
-    const [canvasConfig] = useState<CanvasConfig | null>(async () => {
-      if (isHubPost) return null;
+      const { title, isHubPost } = postInfo;
       
-      const canvasConfigData = await context.redis.get(`hiddenshape_canvas_${context.postId}`);
-      if (!canvasConfigData) return null;
+      // Only load game data if not a hub post (optimization)
+      if (isHubPost) {
+        return { 
+          username, 
+          title, 
+          isHubPost, 
+          gameData: null, 
+          canvasConfig: null, 
+          isRevealed: false, 
+          guessCount: 0 
+        };
+      }
+      
+      // For game posts, load all necessary game data in parallel
+      const [
+        hiddenShapeData, 
+        canvasConfigData, 
+        revealStatus,
+        countStr
+      ] = await Promise.all([
+        context.redis.get(`hiddenshape_data_${context.postId}`),
+        context.redis.get(`hiddenshape_canvas_${context.postId}`),
+        context.redis.get(`hiddenshape_revealed_${context.postId}`),
+        context.redis.get(`hiddenshape_guesscount_${context.postId}`)
+      ]);
+      
+      let gameData = null;
+      let canvasConfig = null;
       
       try {
-        return JSON.parse(canvasConfigData) as CanvasConfig;
+        if (hiddenShapeData) gameData = JSON.parse(hiddenShapeData);
+        if (canvasConfigData) canvasConfig = JSON.parse(canvasConfigData);
       } catch (e) {
-        console.error('Error parsing canvas config:', e);
-        return null;
+        console.error('Error parsing data:', e);
       }
-    });
-
-    // Track the reveal status (only for game posts, not hub)
-    const [isRevealed] = useState<boolean>(async () => {
-      if (isHubPost) return false;
       
-      const revealStatus = await context.redis.get(`hiddenshape_revealed_${context.postId}`);
-      return Boolean(revealStatus);
+      return {
+        username,
+        title,
+        isHubPost,
+        gameData,
+        canvasConfig,
+        isRevealed: Boolean(revealStatus),
+        guessCount: Number(countStr ?? 0)
+      };
     });
-
-    // Get user guess count (only for game posts)
-    const [guessCount] = useState<number>(async () => {
-      if (isHubPost) return 0;
-      
-      const countStr = await context.redis.get(`hiddenshape_guesscount_${context.postId}`);
-      return Number(countStr ?? 0);
-    });
+    
+    // Extract strongly typed values from the state
+    const username = gameInfo?.username ?? 'anon';
+    const isHubPost = gameInfo?.isHubPost ?? false;
+    const gameData = gameInfo?.gameData ?? null;
+    const canvasConfig = gameInfo?.canvasConfig ?? null;
+    const isRevealed = gameInfo?.isRevealed ?? false;
+    const guessCount = gameInfo?.guessCount ?? 0;
     
     // Maintain list of guesses in state (only for game posts)
     const [allGuesses, setAllGuesses] = useState<HeatmapGuessData[]>(async () => {
@@ -106,15 +121,11 @@ Devvit.addCustomPostType({
       onUnmount() {
         // Just show a toast that the game was closed
         context.ui.showToast({ text: 'Game closed' });
-        
-        // No longer need to force a refresh on unmount since we're handling
-        // state updates in real-time through the WebView messaging
       },
     });
 
     // Determine which view to render based on the post type and game state
     const renderView = () => {
-
       // Hub post for creating games
       if (isHubPost) {
         return <Hub webView={webView} context={context} />;
@@ -122,24 +133,31 @@ Devvit.addCustomPostType({
       
       // If not hub, it must be a game post
       if (gameData && canvasConfig) {
-        const [userGuess, setUserGuess] = useState<GuessData | null>(async () => {
-          // Check for user's guess data
-          const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
-          return userData ? JSON.parse(userData) : null;
+        // User guess and stats data
+        const [userGuessAndStats] = useState(async () => {
+          // Get user's guess and stats in parallel
+          const [userData, guessesJson] = await Promise.all([
+            context.redis.get(`hiddenshape_user_${context.postId}_${username}`),
+            guessCount > 0 ? context.redis.get(`hiddenshape_allguesses_${context.postId}`) : null
+          ]);
+          
+          const userGuess = userData ? JSON.parse(userData) : null;
+          
+          let stats = { correctGuesses: 0, totalGuesses: 0 };
+          if (guessCount > 0 && guessesJson) {
+            const guesses = JSON.parse(guessesJson);
+            stats = {
+              correctGuesses: guesses.filter((g: HeatmapGuessData) => g.isCorrect).length,
+              totalGuesses: guessCount
+            };
+          }
+          
+          return { userGuess, stats };
         });
         
-        const [stats] = useState<{correctGuesses: number, totalGuesses: number}>(async () => {
-          if (guessCount === 0) return { correctGuesses: 0, totalGuesses: 0 };
-          
-          const guessesJson = await context.redis.get(`hiddenshape_allguesses_${context.postId}`);
-          const guesses = guessesJson ? JSON.parse(guessesJson) : [];
-          const correctGuesses = guesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
-          
-          return {
-            correctGuesses,
-            totalGuesses: guessCount
-          };
-        });
+        // Extract strongly typed values
+        const userGuess = userGuessAndStats?.userGuess ?? null;
+        const stats = userGuessAndStats?.stats ?? { correctGuesses: 0, totalGuesses: 0 };
         
         const successRate = stats.totalGuesses > 0 
           ? Math.round((stats.correctGuesses / stats.totalGuesses) * 100) 
@@ -161,11 +179,6 @@ Devvit.addCustomPostType({
         
         // Active game, user has already guessed
         if (userGuess) {
-          const [userGuessResult] = useState<{isCorrect?: boolean}>(async () => {
-            const userGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
-            return userGuessData ? JSON.parse(userGuessData) : {};
-          });
-          
           return (
             <Results
               gameData={gameData}
@@ -173,7 +186,7 @@ Devvit.addCustomPostType({
               guessCount={guessCount}
               successRate={successRate}
               userGuess={userGuess}
-              userGuessResult={userGuessResult}
+              userGuessResult={userGuess}
             />
           );
         }

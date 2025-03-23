@@ -11,31 +11,43 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
   const [showingStats, setShowingStats] = useState(false);
   const [showingGuide, setShowingGuide] = useState(false);
 
-  // Fetch stats from Redis using the global counters
+  // Fetch stats from Redis using the global counters with caching
   const [gameStats] = useState<{
     totalGames: number;
     totalGuesses: number;
     successRate: number;
   }>(async () => {
     try {
-      const totalGamesStr = await context.redis.get('hiddenshape_total_games');
-      const totalGames = totalGamesStr ? parseInt(totalGamesStr) : 0;
+      // Use cache to reduce Redis calls and optimize performance
+      return await context.cache(
+        async () => {
+          // Fetch all stats in parallel
+          const [totalGamesStr, totalGuessesStr, totalCorrectGuessesStr] = await Promise.all([
+            context.redis.get('hiddenshape_total_games'),
+            context.redis.get('hiddenshape_total_guesses'),
+            context.redis.get('hiddenshape_total_correct_guesses')
+          ]);
 
-      const totalGuessesStr = await context.redis.get('hiddenshape_total_guesses');
-      const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
+          const totalGames = totalGamesStr ? parseInt(totalGamesStr) : 0;
+          const totalGuesses = totalGuessesStr ? parseInt(totalGuessesStr) : 0;
+          const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
 
-      const totalCorrectGuessesStr = await context.redis.get('hiddenshape_total_correct_guesses');
-      const totalCorrectGuesses = totalCorrectGuessesStr ? parseInt(totalCorrectGuessesStr) : 0;
+          const successRate = totalGuesses > 0
+            ? Math.round((totalCorrectGuesses / totalGuesses) * 100)
+            : 0;
 
-      const successRate = totalGuesses > 0
-        ? Math.round((totalCorrectGuesses / totalGuesses) * 100)
-        : 0;
-
-      return {
-        totalGames,
-        totalGuesses,
-        successRate
-      };
+          return {
+            totalGames,
+            totalGuesses,
+            successRate
+          };
+        },
+        {
+          // Cache stats for 30 seconds
+          key: 'global_game_stats_cache',
+          ttl: 30 * 1000 // 30 seconds
+        }
+      );
     } catch (error) {
       console.error('Error fetching game stats:', error);
       return {
