@@ -1,5 +1,6 @@
 import { Context, Devvit } from '@devvit/public-api';
 import type { WebViewMessage, DevvitMessage, ShapeData, GuessData, HeatmapGuessData } from '../message.js';
+import { LoadingScreen } from '../components/LoadingScreen.js';
 
 /**
  * Handles the WebView message communication
@@ -73,9 +74,7 @@ export async function handleWebViewMessage(
         title: `Find the Hidden ${message.data.shapeType} - ${new Date().toLocaleString()}`,
         subredditName: await (await context.reddit.getCurrentSubreddit()).name,
         preview: (
-          <vstack height="100%" width="100%" alignment="middle center">
-            <text size="large">Loading Game...</text>
-          </vstack>
+          <LoadingScreen text='Loading Game...'/>
         ),
       });
       

@@ -30,10 +30,9 @@ export function showNotification(element, message, duration = 3000, type = 'defa
   
   // Set notification content
   element.textContent = message;
-  element.style.display = 'block';
   
-  // Remove any existing type classes
-  element.classList.remove('notification-success', 'notification-error', 'notification-info');
+  // Remove any existing type classes and hide class
+  element.classList.remove('notification-success', 'notification-error', 'notification-info', 'hide');
   
   // Add appropriate class based on type
   if (type === 'success') {
@@ -44,15 +43,18 @@ export function showNotification(element, message, duration = 3000, type = 'defa
     element.classList.add('notification-info');
   }
   
+  // Make sure the element is visible
+  element.style.display = 'block';
+  
   // Set timeout to hide notification
   element._hideTimeout = setTimeout(() => {
-    // Add fade-out class first
-    element.classList.add('notification-fadeout');
+    // Add hide class to trigger the slide-down animation
+    element.classList.add('hide');
     
     // Then hide after animation completes
     setTimeout(() => {
       element.style.display = 'none';
-      element.classList.remove('notification-fadeout');
-    }, 300);
+      element.classList.remove('hide');
+    }, 300); // Match the duration of the slideDown animation
   }, duration);
 } 

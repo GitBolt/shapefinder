@@ -22,7 +22,7 @@ export class GameModes {
     // Reset the main headline to default state
     const mainHeadline = document.querySelector('.game-container h1');
     if (mainHeadline) {
-      mainHeadline.textContent = 'Click anywhere on the canvas to place shape';
+      mainHeadline.textContent = 'Tap on the canvas to place shape';
     }
     
     this.gameInstructions.textContent = '';
@@ -39,7 +39,7 @@ export class GameModes {
     // Reset the main headline to default state
     const mainHeadline = document.querySelector('.game-container h1');
     if (mainHeadline) {
-      mainHeadline.textContent = 'Click anywhere on the canvas to place shape';
+      mainHeadline.textContent = 'Tap on the canvas to place shape';
     }
     
     this.gameInstructions.textContent = '';

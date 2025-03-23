@@ -3,7 +3,7 @@ import './createPost.js';
 import { Devvit, useState, useWebView } from '@devvit/public-api';
 import type { DevvitMessage, WebViewMessage, ShapeData, GuessData, HeatmapGuessData, CanvasConfig } from './message.js';
 import { Empty } from './views/Empty.js';
-import { handleWebViewMessage } from './components/WebViewHandler.js';
+import { handleWebViewMessage } from './util/webViewHandler.js';
 import { Start } from './views/Start.js';
 import { Hub } from './views/Hub.js';
 import { Complete } from './views/Complete.js';
@@ -15,7 +15,6 @@ Devvit.configure({
 });
 
 
-// Add a custom post type for Shape Seeker game
 Devvit.addCustomPostType({
   name: 'Shape Seeker Game Hub',
   height: 'tall',

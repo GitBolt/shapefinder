@@ -1,6 +1,8 @@
 import { UIClient, Devvit } from '@devvit/public-api';
 import { useState } from '@devvit/public-api';
 import type { Context } from '@devvit/public-api';
+import { StatsView } from '../components/StatsView.js';
+import { GuideView } from '../components/GuideView.js';
 
 /**
  * HubView component for the game creator hub post
@@ -63,8 +65,8 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
         alignment="middle center"
       >
         <image
-          imageHeight={50}
-          imageWidth={250}
+          imageHeight={60}
+          imageWidth={360}
           height="100%"
           width="100%"
           url="title_text.png"
@@ -77,7 +79,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
         >
 
           <spacer size="large" />
-          <text size="xlarge" color="#8A56E8" alignment="center top" weight="bold" wrap width="100%">
+          <text size="xxlarge" color="#1a6af7" alignment="center top" weight="bold" wrap width="100%">
             Find a hidden shape amongst other shapes!
           </text>
         </vstack>
@@ -139,206 +141,14 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
     </zstack>
   );
 
-  const renderStatsView = () => (
-
-    <vstack grow alignment="middle center">
-
-
-      {/* Stats View */}
-      <vstack
-        backgroundColor="white"
-        padding="large"
-        cornerRadius="large"
-        width="100%"
-        gap="medium"
-      >
-        <hstack alignment="center middle" width="100%">
-          <text size="xxlarge" weight="bold" color="#1a365d">Game Stats</text>
-          <spacer grow />
-          <button
-            appearance="secondary"
-            size="large"
-            onPress={() => setShowingStats(false)}
-          >
-            Back
-          </button>
-        </hstack>
-
-        <vstack gap="medium" padding="small">
-          <hstack gap="medium" alignment="center middle" width="100%">
-            <vstack
-              backgroundColor="#e6f7ff"
-              padding="medium"
-              cornerRadius="medium"
-              grow
-            >
-              <text size="xlarge" weight="bold" color="#0077cc" width="100%" wrap>
-                {gameStats.totalGames}
-              </text>
-              <text size="small" color="#0099ff" width="100%" wrap>Total Games Created</text>
-            </vstack>
-
-            <vstack
-              backgroundColor="#e6fff0"
-              padding="medium"
-              cornerRadius="medium"
-              grow
-            >
-              <text size="xlarge" weight="bold" color="#00875a" width="100%" wrap>
-                {gameStats.totalGuesses}
-              </text>
-              <text size="small" color="#00b371" width="100%" wrap>Total Guesses Made</text>
-            </vstack>
-          </hstack>
-
-          <vstack
-            backgroundColor="#fff2e6"
-            padding="medium"
-            cornerRadius="medium"
-          >
-            <text size="medium" weight="bold" color="#cc5500" alignment="middle center" width="100%" wrap>
-              Average Success Rate
-            </text>
-            <text size="xxlarge" weight="bold" color="#ff8c42" alignment="middle center" width="100%" wrap>
-              {gameStats.successRate}%
-            </text>
-          </vstack>
-
-          <vstack
-            backgroundColor="#e6f0ff"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <text size="medium" color="#3366cc" alignment="middle center" width="100%" wrap>
-              Stats are calculated in real-time across all games
-            </text>
-          </vstack>
-        </vstack>
-      </vstack>
-    </vstack>
-  );
-
-  const renderGuideView = () => (
-    <vstack grow alignment="middle center">
-      {/* Guide View */}
-      <vstack
-        backgroundColor="white"
-        padding="small"
-        cornerRadius="large"
-        width="100%"
-        gap="small"
-      >
-        <hstack alignment="center middle" width="100%">
-          <text size="xxlarge" weight="bold" color="#1a365d">How to Play</text>
-          <spacer grow />
-          <button
-            appearance="secondary"
-            size="large"
-            onPress={() => setShowingGuide(false)}
-          >
-            Back
-          </button>
-        </hstack>
-
-        <vstack gap="small" padding="none">
-          <vstack
-            backgroundColor="#e6f7ff"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <hstack gap="small" alignment="start top" width="100%">
-              <text size="medium" weight="bold" color="#0077cc">1.</text>
-              <vstack alignment="start" width="90%">
-                <text weight="bold" color="#0077cc">Create a Game</text>
-                <text
-                  size="small"
-                  color="#1d7aff"
-                  alignment="start"
-                  width="100%"
-                  wrap
-                >
-                  Click "Create Game" in the menu to design your own challenge by placing a hidden shape on the canvas.
-                </text>
-              </vstack>
-            </hstack>
-          </vstack>
-
-          <vstack
-            backgroundColor="#e6fff0"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <hstack gap="small" alignment="start top" width="100%">
-              <text size="medium" weight="bold" color="#00875a">2.</text>
-              <vstack alignment="start" width="90%">
-                <text weight="bold" color="#00875a">Share with Friends</text>
-                <text
-                  size="small"
-                  color="#14ac25"
-                  alignment="start"
-                  width="100%"
-                  wrap
-                >
-                  After your game is created, others can try finding the shape you hid in the canvas.
-                </text>
-              </vstack>
-            </hstack>
-          </vstack>
-
-          <vstack
-            backgroundColor="#fff2e6"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <hstack gap="small" alignment="start top" width="100%">
-              <text size="medium" weight="bold" color="#cb940c">3.</text>
-              <vstack alignment="start" width="90%">
-                <text weight="bold" color="#cb940c">Find the Shape</text>
-                <text
-                  size="small"
-                  color="#c68500"
-                  alignment="start"
-                  width="100%"
-                  wrap
-                >
-                  When playing, click anywhere on the canvas where you think the shape is hidden. You get one guess per game!
-                </text>
-              </vstack>
-            </hstack>
-          </vstack>
-
-          <vstack
-            backgroundColor="#ffebfd"
-            padding="small"
-            cornerRadius="medium"
-          >
-            <hstack gap="small" alignment="start top" width="100%">
-              <text size="medium" weight="bold" color="#a900b9">4.</text>
-              <vstack alignment="start" width="90%">
-                <text weight="bold" color="#a900b9">See Results</text>
-                <text
-                  size="small"
-                  color="#c100a2"
-                  alignment="start"
-                  width="100%"
-                  wrap
-                >
-                  After guessing, you'll see how close you were and whether you found the shape!
-                </text>
-              </vstack>
-            </hstack>
-          </vstack>
-
-        </vstack>
-      </vstack>
-    </vstack>
-  );
-
   return (
-    <vstack grow padding="large" cornerRadius="large" backgroundColor="#f8f9ff">
-      {showingStats ? renderStatsView() :
-        showingGuide ? renderGuideView() :
-          renderMainView()}
+    <vstack grow cornerRadius="large" backgroundColor="white">
+      {showingStats ? 
+        <StatsView gameStats={gameStats} onBack={() => setShowingStats(false)} /> :
+        showingGuide ? 
+        <GuideView onBack={() => setShowingGuide(false)} /> :
+        renderMainView()
+      }
     </vstack>
   );
 } 

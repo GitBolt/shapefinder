@@ -145,11 +145,11 @@
       @keyframes slideInNotification {
         from { 
           opacity: 0;
-          transform: translateY(-20px);
+          transform: translate(-50%, 20px);
         }
         to { 
           opacity: 1;
-          transform: translateY(0);
+          transform: translate(-50%, 0);
         }
       }
       
@@ -166,26 +166,32 @@
       
       /* Enhanced notification styles */
       .notification-success {
-        background-color: #e6fffa;
+        background-color: rgba(230, 255, 250, 0.9);
         color: #047857;
         border-left: 4px solid #10b981;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
       
       .notification-error {
-        background-color: #fff5f5;
+        background-color: rgba(255, 245, 245, 0.9);
         color: #e53e3e;
         border-left: 4px solid #f56565;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
       
       .notification-info {
-        background-color: #e6f6ff;
+        background-color: rgba(230, 246, 255, 0.9);
         color: #0284c7;
         border-left: 4px solid #38bdf8;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
       
-      .notification-fadeout {
-        opacity: 0;
-        transform: translateY(10px);
+      /* Use hide class instead of notification-fadeout for consistency */
+      .notification.hide {
+        animation: slideDown 0.3s forwards !important;
       }
     </style>
   </head>
@@ -198,11 +204,11 @@
         <div class="shape-loader triangle"></div>
         <div class="shape-loader star"></div>
       </div>
-      <p>Loading game...</p>
+      <p>Loading Game...</p>
     </div>
     
     <div class="game-container">
-      <h1>Click anywhere on the canvas to place shape</h1>
+      <h1>Tap on the canvas to place shape</h1>
       <div id="game-instructions" class="instructions"></div>
       
       <div class="game-layout">
@@ -212,28 +218,6 @@
             <canvas id="shape-cloud" width="350" height="350" data-role="background-shapes"></canvas>
             <canvas id="heatmap-layer" width="350" height="350" data-role="heatmap"></canvas>
             <canvas id="interaction-layer" width="350" height="350" data-role="interaction"></canvas>
-          </div>
-          
-          <div class="canvas-buttons">
-            <button id="regenerate-shapes" class="secondary-btn needs-attention" style="display: none;">
-              <span>Create Background</span>
-            </button>
-            <button id="remove-repeated-shapes" class="secondary-btn" style="display: none;">
-              <span>Remove Repeated Shapes</span>
-            </button>
-            <button id="create-new-game" class="action-btn" style="display: none;">
-              <span>Create Game</span>
-            </button>
-            
-            <button id="regenerate-shapes-creator" class="secondary-btn needs-attention" style="display: none;">
-              <span>Create Background</span>
-            </button>
-            <button id="remove-repeated-shapes-creator" class="secondary-btn" style="display: none;">
-              <span>Remove Repeated Shapes</span>
-            </button>
-            <button id="submit-hidden-shape" class="action-btn" style="display: none;">
-              <span>Create Game</span>
-            </button>
           </div>
         </div>
         
@@ -328,6 +312,28 @@
             <button id="back-to-guessing" class="secondary-btn" style="display: none;">Back to Guessing</button>
           </div>
         </div>
+      </div>
+      
+      <div class="canvas-buttons">
+        <button id="regenerate-shapes" class="secondary-btn needs-attention" style="display: none;">
+          <span>Create Background Shapes</span>
+        </button>
+        <button id="remove-repeated-shapes" class="secondary-btn" style="display: none;">
+          <span>Remove Repeated Shapes</span>
+        </button>
+        <button id="create-new-game" class="action-btn" style="display: none;">
+          <span>Create Game</span>
+        </button>
+        
+        <button id="regenerate-shapes-creator" class="secondary-btn needs-attention" style="display: none;">
+          <span>Create Background Shapes</span>
+        </button>
+        <button id="remove-repeated-shapes-creator" class="secondary-btn" style="display: none;">
+          <span>Remove Repeated Shapes</span>
+        </button>
+        <button id="submit-hidden-shape" class="action-btn" style="display: none;">
+          <span>Create Game</span>
+        </button>
       </div>
       
       <div id="notification" class="notification" style="display: none;"></div>

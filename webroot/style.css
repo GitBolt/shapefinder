@@ -57,10 +57,12 @@ body {
   width: 100%;
   min-width: 650px;
   gap: 1.25rem;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
   padding-left: 20px;
   position: relative;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 .game-layout::before {
@@ -83,6 +85,10 @@ body {
   flex: 0 0 250px;
   width: 250px;
   max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 348px; /* Exactly match the canvas height accounting for borders */
 }
 
 h1 {
@@ -129,7 +135,7 @@ h1::after {
 
 h3 {
   font-size: 1.25rem;
-  margin: 0.75rem 0 0.6rem;
+  margin: 0.5rem 0 0.5rem;
   text-align: center;
   font-weight: 700;
   color: var(--text-color);
@@ -182,8 +188,8 @@ p {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.25rem;
+  gap: 0.6rem;
+  padding: 1rem;
   background-color: var(--canvas-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
@@ -196,6 +202,10 @@ p {
     linear-gradient(45deg, var(--pattern-color) 25%, transparent 25%);
   background-size: 20px 20px;
   background-position: 0 0, 10px 0, 10px -10px, 0px 10px;
+  height: 100%;
+  max-height: 348px; /* Exactly match the canvas height accounting for borders */
+  justify-content: flex-start;
+  overflow-y: auto;
 }
 
 .controls-container::before {
@@ -214,7 +224,8 @@ p {
   position: relative;
   width: 350px;
   min-width: 350px;
-  height: 350px;
+  height: 100%;
+  min-height: 350px;
   margin: 0;
   border-radius: var(--border-radius);
   overflow: hidden;
@@ -290,13 +301,13 @@ p {
   flex-direction: row;
   gap: 0.75rem;
   justify-content: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .shape-btn,
 .color-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   aspect-ratio: 1;
   border: 2px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
@@ -345,8 +356,8 @@ p {
 }
 
 .shape-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   display: block;
   transition: transform 0.2s;
 }
@@ -356,30 +367,30 @@ p {
 }
 
 .shape-icon.square {
-  background-color: #4dabf7;
-  width: 18px;
-  height: 18px;
+  background-color: #343a40;
+  width: 16px;
+  height: 16px;
 }
 
 .shape-icon.circle {
   background-color: #343a40;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
 }
 
 .shape-icon.triangle {
   width: 0;
   height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 18px solid #495057;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 16px solid #495057;
 }
 
 .shape-icon.star {
   position: relative;
-  color: #ffd43b;
-  font-size: 20px;
+  color: #343a40;
+  font-size: 18px;
 }
 
 .shape-icon.star:before {
@@ -443,9 +454,9 @@ p {
 .secondary-btn {
   padding: 0.6rem 0.75rem;
   width: 100%;
-  background-color: #f1f3f8;
-  color: var(--text-color);
-  border: 1px solid #e9ecef;
+  background-color: white;
+  color: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
   border-radius: var(--border-radius);
   font-weight: 500;
   font-size: 0.8rem;
@@ -504,7 +515,7 @@ p {
   bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--text-color);
+  background-color: rgba(37, 42, 52, 0.85);
   color: white;
   padding: 0.85rem 1.75rem;
   border-radius: var(--border-radius);
@@ -515,6 +526,8 @@ p {
   border-left: 4px solid var(--accent-2);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   animation: slideUp 0.3s ease-out;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 @keyframes slideUp {
@@ -525,6 +538,22 @@ p {
   to {
     opacity: 1;
     transform: translate(-50%, 0);
+  }
+}
+
+/* Add fade out animation */
+.notification.hide {
+  animation: slideDown 0.3s forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
   }
 }
 
@@ -583,6 +612,7 @@ p {
   align-items: center;
   gap: 0.5rem;
   position: relative;
+  margin-bottom: 0.5rem;
 }
 
 .size-slider {
@@ -652,7 +682,7 @@ p {
 }
 
 .shape-size-control span {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-top: 0.25rem;
   color: var(--secondary-color);
@@ -679,7 +709,7 @@ p {
   
   .game-layout {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
     padding-left: 10px;
     min-width: 650px;
     width: 650px;
@@ -689,11 +719,12 @@ p {
     width: 350px;
     max-width: 350px;
     flex: 0 0 350px;
+    height: 100%;
   }
   
   .canvas-buttons {
-    width: 350px;
-    max-width: 350px;
+    width: 100%;
+    max-width: 650px;
   }
   
   .game-controls {
@@ -701,6 +732,15 @@ p {
     max-width: 250px;
     width: 250px;
     flex: 0 0 250px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .controls-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -724,6 +764,11 @@ p {
     transform: scale(0.85);
     transform-origin: top left;
     margin-bottom: -30px;
+    padding-bottom: 0.5rem;
+  }
+  
+  .canvas-buttons {
+    margin-top: 0.5rem;
   }
 }
 
@@ -751,23 +796,48 @@ p {
     transform: scale(1);
     align-items: center;
     padding-left: 0;
+    border-bottom: none; /* remove border on mobile */
+    padding-bottom: 0; /* remove padding on mobile */
+    margin-bottom: 1rem; /* Added space between layout and buttons */
   }
   
   .left-column {
     width: 100%;
     max-width: 350px;
     flex: none;
+    height: auto;
   }
   
   #game-canvas-container {
     width: 100%;
     max-width: 350px;
     min-width: unset;
+    height: 350px;
   }
   
   .canvas-buttons {
     width: 100%;
     max-width: 350px;
+    margin-top: 2rem; /* Increased from 1.5rem to 2rem */
+    margin-bottom: 0.5rem; /* Added margin at bottom too */
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.75rem; /* Increased from 0.5rem to 0.75rem */
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+    position: relative;
+  }
+  
+  .canvas-buttons::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background-color: var(--accent-3);
+    border-radius: 3px;
+    opacity: 0.6;
   }
   
   .game-controls {
@@ -775,10 +845,20 @@ p {
     max-width: 350px;
     flex: none;
     margin-top: 1rem;
+    height: auto;
   }
   
   .controls-container {
     width: 100%;
+    height: auto;
+    padding: 0.75rem; /* Reduced padding for mobile */
+    gap: 0.5rem; /* Reduced gap for mobile */
+  }
+  
+  .canvas-buttons .secondary-btn,
+  .canvas-buttons .action-btn {
+    min-height: 50px; /* slightly shorter in mobile */
+    padding: 0.6rem 0.5rem;
   }
 }
 
@@ -800,6 +880,27 @@ p {
   .controls-container {
     padding: 0.75rem;
   }
+  
+  .canvas-buttons {
+    margin-top: 2rem; /* Matched the increase */
+    margin-bottom: 0.5rem; /* Added margin at bottom too */
+    padding-top: 0.75rem; /* Increased padding */
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+    position: relative;
+  }
+  
+  .canvas-buttons::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background-color: var(--accent-3);
+    border-radius: 3px;
+    opacity: 0.6;
+  }
 }
 
 /* Compact styles for better mobile viewing */
@@ -819,10 +920,15 @@ p {
   
   .game-layout {
     gap: 1rem;
+    padding-bottom: 0.3rem;
   }
   
   .left-column {
     gap: 0.75rem;
+  }
+  
+  .canvas-buttons {
+    margin-top: 0.3rem;
   }
   
   .canvas-buttons .secondary-btn,
@@ -835,6 +941,10 @@ p {
 .left-column {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  flex: 0 0 350px;
+  width: 350px;
+  min-width: 350px;
   gap: 1rem;
 }
 
@@ -842,9 +952,11 @@ p {
   display: flex;
   flex-direction: row;
   gap: 0.75rem;
-  width: 350px;
-  margin-top: 0.5rem;
+  width: 100%;
+  max-width: calc(350px + 250px + 1.25rem);
+  margin: 0.5rem auto 0;
   min-height: 45px;
+  justify-content: center;
 }
 
 .canvas-buttons .secondary-btn,
@@ -886,8 +998,8 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 12px 0;
-  gap: 5px;
+  margin: 8px 0;
+  gap: 3px;
 }
 
 #timer-bar {
@@ -908,7 +1020,7 @@ p {
 }
 
 #timer-text {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--accent-2);
   font-family: 'Nunito', sans-serif;
@@ -1388,7 +1500,7 @@ p {
   margin-top: 1.5rem;
   font-size: 1.2rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--secondary-color);
   font-family: 'Nunito', sans-serif;
 }
 
