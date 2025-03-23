@@ -2,23 +2,25 @@ import './createPost.js';
 
 import { Devvit, useState, useWebView } from '@devvit/public-api';
 import type { DevvitMessage, WebViewMessage, ShapeData, GuessData, HeatmapGuessData, CanvasConfig } from './message.js';
-import { HubView } from './components/HubView.js';
-import { ActiveGameView } from './components/ActiveGameView.js';
-import { RevealedGameView } from './components/RevealedGameView.js';
-import { EmptyGameView } from './components/EmptyGameView.js';
+import { Empty } from './views/Empty.js';
 import { handleWebViewMessage } from './components/WebViewHandler.js';
+import { Start } from './views/Start.js';
+import { Hub } from './views/Hub.js';
+import { Complete } from './views/Complete.js';
+import { Results } from './views/Results.js';
 
 Devvit.configure({
   redditAPI: true,
   redis: true,
 });
 
+
 // Add a custom post type for Hidden Shape game
 Devvit.addCustomPostType({
   name: 'Where\'s the Shape? Game Hub',
   height: 'tall',
   render: (context) => {
-    // Load username with `useAsync` hook
+
     const [username] = useState<string>(async () => {
       return (await context.reddit.getCurrentUsername()) ?? 'anon';
     });
@@ -107,77 +109,88 @@ Devvit.addCustomPostType({
       },
     });
 
-    // If this is a hub post for creating games
-    if (isHubPost) {
-      return <HubView webView={webView} context={context} />;
-    }
+    // Determine which view to render based on the post type and game state
+    const renderView = () => {
 
-    // If we're showing a game post that someone else created
-    else if (gameData && canvasConfig) {
-      // Check if the user has already played
-      const [userGuess] = useState<GuessData | null>(async () => {
-        const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
-        return userData ? JSON.parse(userData) : null;
-      });
+      // Hub post for creating games
+      if (isHubPost) {
+        return <Hub webView={webView} context={context} />;
+      }
       
-      // Calculate stats
-      const [stats] = useState<{correctGuesses: number, totalGuesses: number}>(async () => {
-        if (guessCount === 0) return { correctGuesses: 0, totalGuesses: 0 };
-        
-        const guessesJson = await context.redis.get(`hiddenshape_allguesses_${context.postId}`);
-        const guesses = guessesJson ? JSON.parse(guessesJson) : [];
-        const correctGuesses = guesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
-        
-        return {
-          correctGuesses,
-          totalGuesses: guessCount
-        };
-      });
-      
-      // Calculate success percentage (avoid division by zero)
-      const successRate = stats.totalGuesses > 0 
-        ? Math.round((stats.correctGuesses / stats.totalGuesses) * 100) 
-        : 0;
-      
-      // For revealed games (ended games)
-      if (isRevealed) {
-        return (
-          <RevealedGameView
-            gameData={gameData}
-            canvasConfig={canvasConfig}
-            guessCount={guessCount}
-            successRate={successRate}
-            userGuess={userGuess}
-            webView={webView}
-          />
-        );
-      } 
-      // For active games
-      else {
-        // Get user's own guess data
-        const [userGuessResult] = useState<{isCorrect?: boolean}>(async () => {
-          if (!userGuess) return {};
-          
-          const userGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
-          return userGuessData ? JSON.parse(userGuessData) : {};
+    // If not hub, it must be a game post
+      if (gameData && canvasConfig) {
+        const [userGuess] = useState<GuessData | null>(async () => {
+          const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+          return userData ? JSON.parse(userData) : null;
         });
         
+        const [stats] = useState<{correctGuesses: number, totalGuesses: number}>(async () => {
+          if (guessCount === 0) return { correctGuesses: 0, totalGuesses: 0 };
+          
+          const guessesJson = await context.redis.get(`hiddenshape_allguesses_${context.postId}`);
+          const guesses = guessesJson ? JSON.parse(guessesJson) : [];
+          const correctGuesses = guesses.filter((g: HeatmapGuessData) => g.isCorrect).length;
+          
+          return {
+            correctGuesses,
+            totalGuesses: guessCount
+          };
+        });
+        
+        const successRate = stats.totalGuesses > 0 
+          ? Math.round((stats.correctGuesses / stats.totalGuesses) * 100) 
+          : 0;
+        
+        // Game has ended (revealed)
+        if (isRevealed) {
+          return (
+            <Complete
+              gameData={gameData}
+              canvasConfig={canvasConfig}
+              guessCount={guessCount}
+              successRate={successRate}
+              userGuess={userGuess}
+              webView={webView}
+            />
+          );
+        }
+        
+        // Active game, user has already guessed
+        if (userGuess) {
+          const [userGuessResult] = useState<{isCorrect?: boolean}>(async () => {
+            const userGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
+            return userGuessData ? JSON.parse(userGuessData) : {};
+          });
+          
+          return (
+            <Results
+              gameData={gameData}
+              canvasConfig={canvasConfig}
+              guessCount={guessCount}
+              successRate={successRate}
+              userGuess={userGuess}
+              userGuessResult={userGuessResult}
+            />
+          );
+        }
+        
+        // Active game, user has not guessed yet
         return (
-          <ActiveGameView
+          <Start
             gameData={gameData}
             canvasConfig={canvasConfig}
             guessCount={guessCount}
             successRate={successRate}
-            userGuess={userGuess}
-            userGuessResult={userGuessResult}
             webView={webView}
           />
         );
       }
-    } else {
-      // When the post is neither hub nor a game (shouldn't typically happen)
-      return <EmptyGameView webView={webView} />;
-    }
+      
+      // When it is not a hub nor a game (Should not happen really)
+      return <Empty/>;
+    };
+
+    return renderView();
   },
 });
 

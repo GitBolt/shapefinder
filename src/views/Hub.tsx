@@ -5,7 +5,7 @@ import type { Context } from '@devvit/public-api';
 /**
  * HubView component for the game creator hub post
  */
-export function HubView({ webView, context }: { webView: any, context: Context }) {
+export function Hub({ webView, context }: { webView: any, context: Context }) {
   const [showingStats, setShowingStats] = useState(false);
   const [showingGuide, setShowingGuide] = useState(false);
 

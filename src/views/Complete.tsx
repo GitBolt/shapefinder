@@ -13,7 +13,7 @@ type RevealedGameViewProps = {
 /**
  * View for revealed (completed) games
  */
-export function RevealedGameView({ 
+export function Complete({ 
   gameData, 
   canvasConfig, 
   guessCount, 

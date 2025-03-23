@@ -743,22 +743,19 @@ p {
 .canvas-buttons .action-btn {
   flex: 1;
   margin-top: 0;
-  white-space: normal;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  white-space: nowrap;
+  display: block;
   height: auto;
-  min-height: 60px;
-  padding: 0.75rem 0.5rem;
-  line-height: 1.2;
+  min-height: 40px;
+  text-align: center;
 }
 
 .canvas-buttons .action-btn {
-  font-weight: 600;
+  padding: 0.75rem 0.5rem;
 }
 
 .canvas-buttons .secondary-btn {
+  padding: 0.75rem 0.5rem;
   font-weight: 600;
 }
 
@@ -1292,6 +1289,7 @@ p {
   width: 30px;
   height: 30px;
   position: relative;
+  animation: bounce 1.2s infinite;
 }
 
 .shape-loader.square {
