@@ -285,34 +285,44 @@ class HiddenShapeGame {
                 this.userGuess.isCorrect = message.data.isCorrect;
               }
               
-              this.gameModes.showPersonalResultsMode(this.hiddenShape, this.guessCount, message.data.isCorrect, this.userGuess);
+              // Show a notification first
+              const resultMessage = message.data.isCorrect ? 
+                'Congratulations! You found the hidden shape! 🎉' : 
+                'Not quite! Here\'s where the shape was hidden.';
+              this.showNotification(resultMessage, 2500);
               
-              // For personal results, show the user's guess vs target
-              this.renderer.drawHiddenShape(
-                this.hiddenShape.x, 
-                this.hiddenShape.y, 
-                this.gameMode, 
-                this.selectedShape, 
-                this.selectedColor, 
-                this.hiddenShape, 
-                true
-              );
-              this.renderer.drawPersonalResultHeatmap(this.userGuess, this.allGuesses, this.hiddenShape);
+              // Apply smooth transition to results view
+              document.querySelector('.game-container').classList.add('results-transition');
               
-              // Request a post refresh from Devvit after a short delay
-              
+              // Slight delay to ensure smooth transition before changing the UI
               setTimeout(() => {
-                // This ensures the post view is refreshed to show Results
-                this.sendWebViewMessage({
-                  type: 'refreshPost',
-                  data: { postId: this.postId }
-                });
-              }, 1000);
-            } else {
-              this.showNotification(message.data.message);
+                this.gameModes.showPersonalResultsMode(
+                  this.hiddenShape, 
+                  this.guessCount, 
+                  message.data.isCorrect, 
+                  this.userGuess
+                );
+                
+                // For personal results, show the user's guess vs target
+                this.renderer.drawHiddenShape(
+                  this.hiddenShape.x, 
+                  this.hiddenShape.y, 
+                  this.gameMode, 
+                  this.selectedShape, 
+                  this.selectedColor, 
+                  this.hiddenShape, 
+                  true
+                );
+                this.renderer.drawPersonalResultHeatmap(this.userGuess, this.allGuesses, this.hiddenShape);
+                
+                // Remove transition class after animation completes
+                setTimeout(() => {
+                  document.querySelector('.game-container').classList.remove('results-transition');
+                }, 500);
+              }, 300);
             }
           } else {
-            this.showNotification(message.data.message);
+            this.showNotification(message.data.message || 'Error recording your guess.');
           }
           break;
         case 'revealResults':
@@ -351,12 +361,27 @@ class HiddenShapeGame {
     }
   }
   
-  sendWebViewMessage(message) {
-    parent.postMessage(message, '*');
+  /**
+   * Shows a notification to the user
+   * @param {string} message - The message to display
+   * @param {number} duration - Duration in milliseconds to show the notification
+   * @param {string} type - Notification type: 'default', 'success', 'error', 'info'
+   */
+  showNotification(message, duration = 3000, type = 'default') {
+    if (!this.notificationElement) {
+      console.warn('Notification element not found');
+      return;
+    }
+    
+    // Use the utility function from utils.js
+    showNotification(this.notificationElement, message, duration, type);
   }
   
-  showNotification(message) {
-    showNotification(this.notificationElement, message);
+  /**
+   * Sends a message to the Devvit webView
+   */
+  sendWebViewMessage(message) {
+    parent.postMessage(message, '*');
   }
 }
 

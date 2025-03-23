@@ -105,31 +105,11 @@ Devvit.addCustomPostType({
         );
       },
       onUnmount() {
+        // Just show a toast that the game was closed
         context.ui.showToast({ text: 'Game closed' });
         
-        // Check if this is a game post (not hub) and user has made a guess
-        // If so, refresh the post view to show the Results view
-        const refreshPostView = async () => {
-          try {
-            if (!isHubPost) {
-              const userGuessData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
-              // Only refresh if user has made a guess
-              if (userGuessData) {
-                const post = await context.reddit.getPostById(context.postId ?? '');
-                if (post) {
-                  // Use a slight delay to ensure Redis data is committed
-                  setTimeout(() => {
-                    context.ui.navigateTo(post);
-                  }, 300);
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Error refreshing post view on unmount:', error);
-          }
-        };
-        
-        refreshPostView();
+        // No longer need to force a refresh on unmount since we're handling
+        // state updates in real-time through the WebView messaging
       },
     });
 
@@ -141,9 +121,10 @@ Devvit.addCustomPostType({
         return <Hub webView={webView} context={context} />;
       }
       
-    // If not hub, it must be a game post
+      // If not hub, it must be a game post
       if (gameData && canvasConfig) {
-        const [userGuess] = useState<GuessData | null>(async () => {
+        const [userGuess, setUserGuess] = useState<GuessData | null>(async () => {
+          // Check for user's guess data
           const userData = await context.redis.get(`hiddenshape_user_${context.postId}_${username}`);
           return userData ? JSON.parse(userData) : null;
         });

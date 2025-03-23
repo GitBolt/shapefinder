@@ -557,7 +557,7 @@ export class EventHandlers {
   
   submitGuess() {
     if (!this.game.userGuess) {
-      this.game.showNotification('Please make a guess first!');
+      this.game.showNotification('Please make a guess first!', 3000, 'error');
       return;
     }
     
@@ -581,6 +581,6 @@ export class EventHandlers {
     });
     
     // Show a submitting notification
-    this.game.showNotification('Submitting your guess...');
+    this.game.showNotification('Submitting your guess...', 2000, 'info');
   }
 } 

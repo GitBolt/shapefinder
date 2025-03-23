@@ -238,18 +238,9 @@ export async function handleWebViewMessage(
         }
       });
 
-      // Force a refresh of the post to show the Results view by navigating to the current post
-      try {
-        const currentPost = await context.reddit.getPostById(state.postId);
-        if (currentPost) {
-          // Use a slight delay to ensure Redis data is committed
-          setTimeout(() => {
-            context.ui.navigateTo(currentPost);
-          }, 500);
-        }
-      } catch (error) {
-        console.error('Error refreshing post view:', error);
-      }
+      // Removed the forced refresh that was causing the page reload
+      // Instead, we'll rely on the client-side JS to update the view
+      // This allows users to see their results immediately without a page reload
       break;
       
     case 'revealShape':
