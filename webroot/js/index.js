@@ -19,6 +19,9 @@ class HiddenShapeGame {
     this.allGuesses = [];
     this.userClick = null;
     this.canvasConfig = null; // For storing the background shapes configuration
+    this.repeatedShapesRemoved = false; // Track if repeated shapes have been removed
+    this.initialShape = null; // Track initial shape used for background generation
+    this.initialColor = null; // Track initial color used for background generation
     
     // DOM elements
     this.shapeCloudCanvas = document.getElementById('shape-cloud');
@@ -54,6 +57,8 @@ class HiddenShapeGame {
     this.closestGuessDisplay = document.getElementById('closest-guess');
     this.wildestMissDisplay = document.getElementById('wildest-miss');
     this.regenerateShapesBtn = document.getElementById('regenerate-shapes');
+    this.removeRepeatedShapesBtn = document.getElementById('remove-repeated-shapes');
+    this.removeRepeatedShapesCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
     this.selectedShapeText = document.getElementById('selected-shape');
     this.selectedColorText = document.getElementById('selected-color');
     this.shapeSizeInput = document.getElementById('shape-size-input');
@@ -103,6 +108,11 @@ class HiddenShapeGame {
     this.username = data.username;
     this.postId = data.postId;
     this.isRevealed = data.isRevealed;
+    
+    // Reset tracking variables for new game initiation
+    this.initialShape = null;
+    this.initialColor = null;
+    this.repeatedShapesRemoved = false;
     
     // Handle Where's Waldo canvas configuration if available
     if (data.canvasConfig) {
@@ -159,6 +169,11 @@ class HiddenShapeGame {
       if (this.regenerateShapesBtn) this.regenerateShapesBtn.style.display = 'block';
       if (this.createNewGameBtn) this.createNewGameBtn.style.display = 'block';
       
+      // Initially hide the remove repeated shapes button until background is created
+      if (this.removeRepeatedShapesBtn) {
+        this.removeRepeatedShapesBtn.style.display = 'none';
+      }
+      
       // For the hub, we should display the random shapes right away
       if (this.selectedShapeText) {
         this.selectedShapeText.textContent = this.selectedShape.charAt(0).toUpperCase() + this.selectedShape.slice(1);
@@ -197,6 +212,11 @@ class HiddenShapeGame {
       const submitHiddenShapeBtn = document.getElementById('submit-hidden-shape');
       if (regenerateCreatorBtn) regenerateCreatorBtn.style.display = 'block';
       if (submitHiddenShapeBtn) submitHiddenShapeBtn.style.display = 'block';
+      
+      // Initially hide the remove repeated shapes button until background is created
+      if (this.removeRepeatedShapesCreatorBtn) {
+        this.removeRepeatedShapesCreatorBtn.style.display = 'none';
+      }
       
       // Initialize the selected shape and color text
       if (this.selectedShapeText) {

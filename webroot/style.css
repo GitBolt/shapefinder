@@ -482,6 +482,20 @@ p {
   transform: translateY(1px);
 }
 
+.secondary-btn:disabled {
+  background-color: #f5f5f5;
+  color: #a0a0a0;
+  border-color: #e0e0e0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.secondary-btn:disabled::before {
+  display: none;
+}
+
 .notification {
   position: fixed;
   bottom: 1rem;
@@ -834,11 +848,14 @@ p {
 .canvas-buttons .action-btn {
   flex: 1;
   margin-top: 0;
-  white-space: nowrap;
+  white-space: normal;
   display: block;
   height: auto;
-  min-height: 40px;
+  min-height: 60px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .canvas-buttons .action-btn {
@@ -854,7 +871,9 @@ p {
 #regenerate-shapes[style*="display: block"],
 #create-new-game[style*="display: block"],
 #regenerate-shapes-creator[style*="display: block"],
-#submit-hidden-shape[style*="display: block"] {
+#submit-hidden-shape[style*="display: block"],
+#remove-repeated-shapes[style*="display: block"],
+#remove-repeated-shapes-creator[style*="display: block"] {
   visibility: visible !important;
   opacity: 1 !important;
 }
@@ -1458,7 +1477,6 @@ p {
   border-width: 2px !important;
 }
 
-
 .needs-attention.active-attention {
   animation: pulse-border 1.5s infinite, border-flash 1.5s infinite;
   border-width: 2px !important;
@@ -1466,7 +1484,31 @@ p {
   transform: translateY(0) !important;
 }
 
-
 .needs-attention:not(.active-attention) {
   animation: none;
+}
+
+/* Animation for the remove-repeated-shapes button when it needs attention */
+@keyframes attention-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 10px 3px rgba(244, 63, 94, 0.4);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+    transform: scale(1);
+  }
+}
+
+#remove-repeated-shapes.active-attention,
+#remove-repeated-shapes-creator.active-attention {
+  animation: attention-pulse 1.2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  border-color: var(--accent-2) !important;
+  background-color: rgba(244, 63, 94, 0.1);
+  z-index: 1;
+  transform: translateY(0) !important;
 }

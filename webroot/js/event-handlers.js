@@ -5,6 +5,7 @@ export class EventHandlers {
     this.timerInterval = null;
     this.timeRemaining = 5; // 5 seconds countdown
     this.startTime = null; // Add startTime to track when the timer starts
+    this.repeatedShapesRemoved = false; // Track if repeated shapes have been removed
   }
   
   setupEventListeners() {
@@ -44,6 +45,17 @@ export class EventHandlers {
     const regenerateCreatorBtn = document.getElementById('regenerate-shapes-creator');
     if (regenerateCreatorBtn) {
       regenerateCreatorBtn.addEventListener('click', this.regenerateShapes.bind(this));
+    }
+    
+    // Buttons for removing repeated shapes
+    const removeRepeatedShapesBtn = document.getElementById('remove-repeated-shapes');
+    if (removeRepeatedShapesBtn) {
+      removeRepeatedShapesBtn.addEventListener('click', this.removeRepeatedShapes.bind(this));
+    }
+    
+    const removeRepeatedShapesCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
+    if (removeRepeatedShapesCreatorBtn) {
+      removeRepeatedShapesCreatorBtn.addEventListener('click', this.removeRepeatedShapes.bind(this));
     }
   }
   
@@ -174,6 +186,19 @@ export class EventHandlers {
         false,
         this.game.shapeSize
       );
+      
+      // Check if background shapes exist and shape has changed from initial setting
+      if (this.game.canvasConfig && this.game.initialShape && shape !== this.game.initialShape && !this.repeatedShapesRemoved) {
+        // Show the remove repeated shapes button
+        const removeRepeatedBtn = document.getElementById('remove-repeated-shapes');
+        const removeRepeatedCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
+        
+        if (this.game.gameMode === 'hub' && removeRepeatedBtn) {
+          removeRepeatedBtn.style.display = 'block';
+        } else if (this.game.gameMode === 'creator' && removeRepeatedCreatorBtn) {
+          removeRepeatedCreatorBtn.style.display = 'block';
+        }
+      }
     }
   }
   
@@ -207,6 +232,19 @@ export class EventHandlers {
         false,
         this.game.shapeSize
       );
+      
+      // Check if background shapes exist and color has changed from initial setting
+      if (this.game.canvasConfig && this.game.initialColor && color !== this.game.initialColor && !this.repeatedShapesRemoved) {
+        // Show the remove repeated shapes button
+        const removeRepeatedBtn = document.getElementById('remove-repeated-shapes');
+        const removeRepeatedCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
+        
+        if (this.game.gameMode === 'hub' && removeRepeatedBtn) {
+          removeRepeatedBtn.style.display = 'block';
+        } else if (this.game.gameMode === 'creator' && removeRepeatedCreatorBtn) {
+          removeRepeatedCreatorBtn.style.display = 'block';
+        }
+      }
     }
   }
   
@@ -226,7 +264,92 @@ export class EventHandlers {
       btn.classList.remove('active-attention');
     });
     
-    // Notification removed as requested
+    // Reset the repeated shapes removed flag since we just generated new ones
+    this.repeatedShapesRemoved = false;
+    
+    // Save the current shape and color to detect changes later
+    this.game.initialShape = this.game.selectedShape;
+    this.game.initialColor = this.game.selectedColor;
+    
+    // Initially hide the remove repeated shapes buttons after creating background
+    const removeRepeatedBtn = document.getElementById('remove-repeated-shapes');
+    const removeRepeatedCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
+    
+    if (removeRepeatedBtn) {
+      removeRepeatedBtn.style.display = 'none';
+      removeRepeatedBtn.disabled = false;
+    }
+    
+    if (removeRepeatedCreatorBtn) {
+      removeRepeatedCreatorBtn.style.display = 'none';
+      removeRepeatedCreatorBtn.disabled = false;
+    }
+  }
+  
+  removeRepeatedShapes() {
+    // Check if there's a canvas config and background shapes
+    if (!this.game.canvasConfig || !this.game.canvasConfig.backgroundShapes || this.game.canvasConfig.backgroundShapes.length === 0) {
+      this.game.showNotification('Please create background shapes first!');
+      return;
+    }
+    
+    // If shapes have already been removed, don't allow further removals
+    if (this.repeatedShapesRemoved) {
+      this.game.showNotification('Repeated shapes have already been removed!');
+      return;
+    }
+    
+    // Filter out any shapes matching the current selection
+    const currentShape = this.game.selectedShape;
+    const currentColor = this.game.selectedColor;
+    
+    // Filter the background shapes to remove those matching current selection
+    const originalCount = this.game.canvasConfig.backgroundShapes.length;
+    this.game.canvasConfig.backgroundShapes = this.game.canvasConfig.backgroundShapes.filter(shape => {
+      // Keep the shape if it's not the same type OR not the same color
+      return !(shape.shapeType === currentShape && shape.color === currentColor);
+    });
+    
+    // Update the canvas config and redraw
+    this.renderer.setCanvasConfig(this.game.canvasConfig);
+    
+    // Re-draw the user's shape on top
+    this.renderer.drawHiddenShape(
+      this.game.userClick.x, 
+      this.game.userClick.y, 
+      this.game.gameMode, 
+      this.game.selectedShape, 
+      this.game.selectedColor, 
+      this.game.hiddenShape,
+      false,
+      this.game.shapeSize
+    );
+    
+    // Mark as removed so it can only be used once
+    this.repeatedShapesRemoved = true;
+    
+    // Update initialShape and initialColor to current values
+    // This prevents the button from showing up again if the user changes shape/color again
+    this.game.initialShape = this.game.selectedShape;
+    this.game.initialColor = this.game.selectedColor;
+    
+    // Hide and disable the remove buttons after use
+    const removeRepeatedBtn = document.getElementById('remove-repeated-shapes');
+    const removeRepeatedCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
+    
+    if (removeRepeatedBtn) {
+      removeRepeatedBtn.style.display = 'none';
+      removeRepeatedBtn.disabled = true;
+    }
+    
+    if (removeRepeatedCreatorBtn) {
+      removeRepeatedCreatorBtn.style.display = 'none';
+      removeRepeatedCreatorBtn.disabled = true;
+    }
+    
+    // Show notification about how many shapes were removed
+    const removedCount = originalCount - this.game.canvasConfig.backgroundShapes.length;
+    this.game.showNotification(`Removed ${removedCount} ${currentShape} ${currentColor} shapes!`);
   }
   
   createNewGame() {
@@ -250,6 +373,27 @@ export class EventHandlers {
         // Remove the animation after a few seconds
         setTimeout(() => {
           regenerateBtn.classList.remove('active-attention');
+        }, 3000);
+      }
+      return;
+    }
+    
+    // Check if shape or color has changed since background creation, requiring removal of repeated shapes
+    const shapeChanged = this.game.initialShape && this.game.selectedShape !== this.game.initialShape;
+    const colorChanged = this.game.initialColor && this.game.selectedColor !== this.game.initialColor;
+    
+    if ((shapeChanged || colorChanged) && !this.repeatedShapesRemoved) {
+      // If shape/color changed but repeated shapes not removed, block game creation
+      this.game.showNotification('Please remove repeated shapes before creating the game!');
+      
+      // Highlight the remove repeated shapes button
+      const removeRepeatedBtn = document.getElementById('remove-repeated-shapes');
+      if (removeRepeatedBtn) {
+        removeRepeatedBtn.style.display = 'block';
+        removeRepeatedBtn.classList.add('active-attention');
+        // Remove the animation after a few seconds
+        setTimeout(() => {
+          removeRepeatedBtn.classList.remove('active-attention');
         }, 3000);
       }
       return;
@@ -298,6 +442,27 @@ export class EventHandlers {
         // Remove the animation after a few seconds
         setTimeout(() => {
           regenerateBtn.classList.remove('active-attention');
+        }, 3000);
+      }
+      return;
+    }
+    
+    // Check if shape or color has changed since background creation, requiring removal of repeated shapes
+    const shapeChanged = this.game.initialShape && this.game.selectedShape !== this.game.initialShape;
+    const colorChanged = this.game.initialColor && this.game.selectedColor !== this.game.initialColor;
+    
+    if ((shapeChanged || colorChanged) && !this.repeatedShapesRemoved) {
+      // If shape/color changed but repeated shapes not removed, block game creation
+      this.game.showNotification('Please remove repeated shapes before creating the game!');
+      
+      // Highlight the remove repeated shapes button
+      const removeRepeatedCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
+      if (removeRepeatedCreatorBtn) {
+        removeRepeatedCreatorBtn.style.display = 'block';
+        removeRepeatedCreatorBtn.classList.add('active-attention');
+        // Remove the animation after a few seconds
+        setTimeout(() => {
+          removeRepeatedCreatorBtn.classList.remove('active-attention');
         }, 3000);
       }
       return;

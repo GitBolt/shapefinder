@@ -38,12 +38,18 @@
             <button id="regenerate-shapes" class="secondary-btn needs-attention" style="display: none;">
               <span>Create Background</span>
             </button>
+            <button id="remove-repeated-shapes" class="secondary-btn" style="display: none;">
+              <span>Remove Repeated Shapes</span>
+            </button>
             <button id="create-new-game" class="action-btn" style="display: none;">
               <span>Create Game</span>
             </button>
             
             <button id="regenerate-shapes-creator" class="secondary-btn needs-attention" style="display: none;">
               <span>Create Background</span>
+            </button>
+            <button id="remove-repeated-shapes-creator" class="secondary-btn" style="display: none;">
+              <span>Remove Repeated Shapes</span>
             </button>
             <button id="submit-hidden-shape" class="action-btn" style="display: none;">
               <span>Create Game</span>
@@ -172,6 +178,7 @@
             console.log('Hub mode active, showing hub buttons');
             const regenerateBtn = document.getElementById('regenerate-shapes');
             const createBtn = document.getElementById('create-new-game');
+            const removeRepeatedBtn = document.getElementById('remove-repeated-shapes');
             
             if (regenerateBtn) {
               regenerateBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
@@ -179,16 +186,25 @@
             if (createBtn) {
               createBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
             }
+            if (removeRepeatedBtn) {
+              // Initially hide the remove button - it will be shown conditionally
+              removeRepeatedBtn.style.cssText = 'display: none !important;';
+            }
           } else if (creatorActive) {
             console.log('Creator mode active, showing creator buttons');
             const regenerateBtn = document.getElementById('regenerate-shapes-creator');
             const submitBtn = document.getElementById('submit-hidden-shape');
+            const removeRepeatedBtn = document.getElementById('remove-repeated-shapes-creator');
             
             if (regenerateBtn) {
               regenerateBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
             }
             if (submitBtn) {
               submitBtn.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+            }
+            if (removeRepeatedBtn) {
+              // Initially hide the remove button - it will be shown conditionally
+              removeRepeatedBtn.style.cssText = 'display: none !important;';
             }
           }
         }
@@ -208,12 +224,17 @@
             const createNewGameBtn = document.getElementById('create-new-game');
             const regenerateShapesCreatorBtn = document.getElementById('regenerate-shapes-creator');
             const submitHiddenShapeBtn = document.getElementById('submit-hidden-shape');
+            const removeRepeatedShapesBtn = document.getElementById('remove-repeated-shapes');
+            const removeRepeatedShapesCreatorBtn = document.getElementById('remove-repeated-shapes-creator');
             
             // Set explicit display style for all buttons based on active mode
             if (regenerateShapesBtn) regenerateShapesBtn.style.display = hubControlsVisible ? 'block' : 'none';
             if (createNewGameBtn) createNewGameBtn.style.display = hubControlsVisible ? 'block' : 'none';
+            
             if (regenerateShapesCreatorBtn) regenerateShapesCreatorBtn.style.display = creatorControlsVisible ? 'block' : 'none';
             if (submitHiddenShapeBtn) submitHiddenShapeBtn.style.display = creatorControlsVisible ? 'block' : 'none';
+            
+            // Don't change display of repeated shapes buttons - they're conditionally controlled
             
             // Force the canvas-buttons container to display: flex to ensure buttons are visible
             const canvasButtons = document.querySelector('.canvas-buttons');
