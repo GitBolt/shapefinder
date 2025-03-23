@@ -155,7 +155,7 @@ export async function handleWebViewMessage(
         return;
       }
 
-      // For Where's Waldo gameplay, we need to check if guess is close to target
+      // For Shape Seeker gameplay, we need to check if guess is close to target
       // We'll consider it correct if within a small distance of the actual shape
       const guessX = message.data.x;
       const guessY = message.data.y;

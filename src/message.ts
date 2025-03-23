@@ -19,7 +19,7 @@ export type BackgroundShape = {
   layer: number;
 };
 
-// Canvas configuration for the Where's Waldo style game
+// Canvas configuration for the Shape Seeker style game
 export type CanvasConfig = {
   width: number;
   height: number;

@@ -64,7 +64,7 @@ export class GameModes {
     this.guessCountDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
-  showWaldoGuesserMode(hiddenShape, guessCount) {
+  showShapeSeekerGuesserMode(hiddenShape, guessCount) {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
@@ -97,14 +97,14 @@ export class GameModes {
     this.totalGuessesDisplay.textContent = `Total guesses: ${guessCount}`;
   }
   
-  showWaldoResultsMode(hiddenShape, guessCount) {
+  showShapeSeekerResultsMode(hiddenShape, guessCount) {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
     // Update the main headline to show the revealed shape
     const mainHeadline = document.querySelector('.game-container h1');
     if (mainHeadline) {
-      mainHeadline.innerHTML = `The <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> is revealed!`;
+      mainHeadline.innerHTML = `The <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> is revealed`;
     }
     
     this.gameInstructions.innerHTML = `<span class="result-reveal">Revealed!</span> The hidden <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> is now visible! See how everyone did.`;
@@ -161,9 +161,9 @@ export class GameModes {
     // Create more engaging result message
     let resultText;
     if (isCorrect) {
-      resultText = `<span class="result-success">Great job!</span> You found the ${colorName} ${shapeName}!`;
+      resultText = `<span class="result-success">Great job!</span>!`;
     } else {
-      resultText = `<span class="result-miss">Not quite!</span> Here's where the ${colorName} ${shapeName} was hidden.`;
+      resultText = `<span class="result-miss">Not quite!</span>`;
     }
     
     this.gameInstructions.innerHTML = resultText;

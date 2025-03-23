@@ -15,9 +15,9 @@ Devvit.configure({
 });
 
 
-// Add a custom post type for Hidden Shape game
+// Add a custom post type for Shape Seeker game
 Devvit.addCustomPostType({
-  name: 'Where\'s the Shape? Game Hub',
+  name: 'Shape Seeker Game Hub',
   height: 'tall',
   render: (context) => {
 
@@ -31,7 +31,7 @@ Devvit.addCustomPostType({
     });
 
     // Check if this is a hub post
-    const isHubPost = postTitle === 'Where\'s the Shape? Game Hub';
+    const isHubPost = postTitle === 'Shape Seeker Game Hub';
 
     // Only load game data if not a hub post
     const [gameData] = useState<ShapeData | null>(async () => {

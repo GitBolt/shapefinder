@@ -3,7 +3,7 @@ import { GameModes } from './game-modes.js';
 import { EventHandlers } from './event-handlers.js';
 import { showNotification } from './utils.js';
 
-class HiddenShapeGame {
+class ShapeSeekerGame {
   constructor() {
     // Game state
     this.gameMode = null;
@@ -114,7 +114,7 @@ class HiddenShapeGame {
     this.initialColor = null;
     this.repeatedShapesRemoved = false;
     
-    // Handle Where's Waldo canvas configuration if available
+    // Handle Shape Seeker canvas configuration if available
     if (data.canvasConfig) {
       this.canvasConfig = data.canvasConfig;
       
@@ -188,11 +188,11 @@ class HiddenShapeGame {
       if (this.isRevealed) {
         this.gameMode = 'results';
         this.renderer.gameMode = 'results'; // Set renderer's game mode
-        this.gameModes.showWaldoResultsMode(this.hiddenShape, this.guessCount);
+        this.gameModes.showShapeSeekerResultsMode(this.hiddenShape, this.guessCount);
       } else {
         this.gameMode = 'guesser';
         this.renderer.gameMode = 'guesser'; // Set renderer's game mode
-        this.gameModes.showWaldoGuesserMode(this.hiddenShape, this.guessCount);
+        this.gameModes.showShapeSeekerGuesserMode(this.hiddenShape, this.guessCount);
         
         // Start the timer for guessing mode
         setTimeout(() => {
@@ -201,7 +201,7 @@ class HiddenShapeGame {
       }
       
       // Ensure the renderer re-renders with the correct target shape
-      this.renderer.renderWaldoStyleCanvas();
+      this.renderer.renderShapeSeekerCanvas();
     } else {
       this.gameMode = 'creator';
       this.renderer.gameMode = 'creator'; // Set renderer's game mode
@@ -229,7 +229,7 @@ class HiddenShapeGame {
     
     // Make sure the canvas is re-rendered with the correct mode
     if (this.canvasConfig) {
-      this.renderer.renderWaldoStyleCanvas();
+      this.renderer.renderShapeSeekerCanvas();
     }
     
     // Force button visibility update
@@ -330,7 +330,7 @@ class HiddenShapeGame {
           this.allGuesses = message.data.guesses;
           this.gameMode = 'results';
           this.renderer.gameMode = 'results'; // Update the renderer's game mode
-          this.gameModes.showWaldoResultsMode(this.hiddenShape, this.guessCount);
+          this.gameModes.showShapeSeekerResultsMode(this.hiddenShape, this.guessCount);
           
           // Draw the revealed target
           this.renderer.drawHiddenShape(
@@ -386,7 +386,7 @@ class HiddenShapeGame {
 }
 
 // Create the game instance
-const game = new HiddenShapeGame();
+const game = new ShapeSeekerGame();
 
 // Listen for messages from Devvit
 window.addEventListener('message', function(event) {

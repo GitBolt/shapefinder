@@ -1146,6 +1146,7 @@ p {
   display: inline-block;
   color: #2e7d32;
   font-weight: 700;
+  font-size: 1.5rem;
   padding: 0 0.3rem;
   z-index: 1;
 }
@@ -1166,6 +1167,7 @@ p {
   position: relative;
   display: inline-block;
   color: #e53935;
+  font-size: 1.5rem;
   font-weight: 700;
   padding: 0 0.3rem;
   z-index: 1;
@@ -1241,7 +1243,7 @@ p {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
   }
 }
 

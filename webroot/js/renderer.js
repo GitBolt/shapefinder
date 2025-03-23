@@ -10,12 +10,12 @@ export class Renderer {
     this.interactionCtx = this.interactionLayer.getContext('2d');
     this.heatmapCtx = this.heatmapLayer.getContext('2d');
     
-    // Canvas configuration for Where's Waldo style game
+    // Canvas configuration for Shape Seeker style game
     this.canvasConfig = null;
   }
   
   generateRandomShapesCanvas(width, height, targetShape) {
-    // Generate a new canvas configuration for Where's Waldo style game
+    // Generate a new canvas configuration for Shape Seeker style game
     console.log('Generating random shapes for canvas', width, height);
     
     const backgroundShapes = [];
@@ -140,16 +140,16 @@ export class Renderer {
   setCanvasConfig(config) {
     console.log('Setting canvas config', config);
     this.canvasConfig = config;
-    this.renderWaldoStyleCanvas();
+    this.renderShapeSeekerCanvas();
   }
   
-  renderWaldoStyleCanvas() {
+  renderShapeSeekerCanvas() {
     if (!this.canvasConfig) {
       console.warn('No canvas config set');
       return;
     }
     
-    console.log('Rendering Waldo style canvas, game mode:', this.gameMode);
+    console.log('Rendering Shape Seeker style canvas, game mode:', this.gameMode);
     console.log('Canvas config has', this.canvasConfig.backgroundShapes.length, 'shapes');
     
     const ctx = this.shapeCloudCtx;
@@ -306,9 +306,6 @@ export class Renderer {
     this.drawShape(ctx, shapeType, x, y, size);
     
     ctx.globalAlpha = 1;
-    
-    // Re-render the Waldo style canvas to ensure background shapes stay visible
-    this.renderWaldoStyleCanvas();
   }
   
   drawGuess(x, y) {
