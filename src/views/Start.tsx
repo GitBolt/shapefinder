@@ -110,8 +110,8 @@ export function Start({
       {/* Blurred game preview as background */}
       <image
         url={blurredSvgDataUri}
-        imageWidth={Math.max(500, svgWidth * 4)}
-        imageHeight={Math.max(500, svgHeight * 4)}
+        imageWidth={Math.max(400, svgWidth * 3)}
+        imageHeight={Math.max(400, svgHeight * 3)}
         description="Blurred preview of game board with shapes"
       />
 
@@ -130,7 +130,7 @@ export function Start({
           alignment="middle center"
           gap="small"
         >
-          <text size="xxlarge" weight="bold" color="#1a365d" width="100%" wrap>
+          <text size="xxlarge" weight="bold" color="#1a365d" width="100%" wrap alignment='middle center'>
             Where's the{" "}
             {gameData.color.charAt(0).toUpperCase() + gameData.color.slice(1)}{" "}
             {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}?
