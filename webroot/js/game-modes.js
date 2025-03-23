@@ -19,6 +19,12 @@ export class GameModes {
   }
   
   showHubMode() {
+    // Reset the main headline to default state
+    const mainHeadline = document.querySelector('.game-container h1');
+    if (mainHeadline) {
+      mainHeadline.textContent = 'Click anywhere on the canvas to place shape';
+    }
+    
     this.gameInstructions.textContent = '';
     
     this.hubControls.style.display = 'flex';
@@ -30,6 +36,12 @@ export class GameModes {
   }
   
   showCreatorMode() {
+    // Reset the main headline to default state
+    const mainHeadline = document.querySelector('.game-container h1');
+    if (mainHeadline) {
+      mainHeadline.textContent = 'Click anywhere on the canvas to place shape';
+    }
+    
     this.gameInstructions.textContent = '';
     
     this.hubControls.style.display = 'none';
@@ -56,8 +68,12 @@ export class GameModes {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
     
-    this.gameInstructions.textContent = `Find the hidden ${colorName} ${shapeName} among the other shapes! You have 5 seconds to find it.`;
-    
+    // Update the main h1 headline in the document to show the shape to find
+    const mainHeadline = document.querySelector('.game-container h1');
+    if (mainHeadline) {
+      mainHeadline.innerHTML = `Find the <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span>`;
+    }
+        
     this.hubControls.style.display = 'none';
     this.creatorControls.style.display = 'none';
     this.guesserControls.style.display = 'flex';
@@ -84,6 +100,12 @@ export class GameModes {
   showWaldoResultsMode(hiddenShape, guessCount) {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
+    
+    // Update the main headline to show the revealed shape
+    const mainHeadline = document.querySelector('.game-container h1');
+    if (mainHeadline) {
+      mainHeadline.innerHTML = `The <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> is revealed!`;
+    }
     
     this.gameInstructions.innerHTML = `<span class="result-reveal">Revealed!</span> The hidden <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> is now visible! See how everyone did.`;
     
@@ -125,6 +147,16 @@ export class GameModes {
   showPersonalResultsMode(hiddenShape, guessCount, isCorrect = false, userGuess = null) {
     const shapeName = hiddenShape.shapeType.charAt(0).toUpperCase() + hiddenShape.shapeType.slice(1);
     const colorName = hiddenShape.color.charAt(0).toUpperCase() + hiddenShape.color.slice(1);
+    
+    // Update the main headline with personalized result
+    const mainHeadline = document.querySelector('.game-container h1');
+    if (mainHeadline) {
+      if (isCorrect) {
+        mainHeadline.innerHTML = `You found the <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span>!`;
+      } else {
+        mainHeadline.innerHTML = `The <span style="color: ${getColorValue(hiddenShape.color)}; font-weight: bold;">${colorName} ${shapeName}</span> was here!`;
+      }
+    }
     
     // Create more engaging result message
     let resultText;

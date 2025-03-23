@@ -61,20 +61,20 @@ export async function handleWebViewMessage(
       break;
     
     case 'createGamePost':
-      // Hub post: Create a new game post with a shape to find
+      // Create a new game post with a shape to find
       if (!state.isHubPost) {
         // This shouldn't happen, but just in case
         context.ui.showToast({ text: 'Cannot create game from a game post!' });
         return;
       }
       
-      // Create a new post for this game with a Where's Waldo style title
+      // Create a new post for this game
       const gamePost = await context.reddit.submitPost({
         title: `Find the Hidden ${message.data.shapeType} - ${new Date().toLocaleString()}`,
         subredditName: await (await context.reddit.getCurrentSubreddit()).name,
         preview: (
           <vstack height="100%" width="100%" alignment="middle center">
-            <text size="large">Creating Hidden Shape Game...</text>
+            <text size="large">Loading Game...</text>
           </vstack>
         ),
       });
@@ -125,12 +125,12 @@ export async function handleWebViewMessage(
         type: 'gameCreated',
         data: {
           postId: gamePost.id,
-          message: 'New Where\'s Waldo style game created!'
+          message: 'New game created!'
         }
       });
       
       // Navigate the user to the new post
-      context.ui.showToast({ text: 'Hidden Shape game created!' });
+      context.ui.showToast({ text: 'Game created!' });
       context.ui.navigateTo(gamePost);
       break;
       
@@ -237,6 +237,19 @@ export async function handleWebViewMessage(
           }
         }
       });
+
+      // Force a refresh of the post to show the Results view by navigating to the current post
+      try {
+        const currentPost = await context.reddit.getPostById(state.postId);
+        if (currentPost) {
+          // Use a slight delay to ensure Redis data is committed
+          setTimeout(() => {
+            context.ui.navigateTo(currentPost);
+          }, 500);
+        }
+      } catch (error) {
+        console.error('Error refreshing post view:', error);
+      }
       break;
       
     case 'revealShape':
@@ -283,6 +296,20 @@ export async function handleWebViewMessage(
           userGuess: userOwnGuess
         }
       });
+      break;
+      
+    case 'refreshPost':
+      // Handle refresh post request from webview
+      try {
+        if (!state.isHubPost) {
+          const post = await context.reddit.getPostById(state.postId);
+          if (post) {
+            context.ui.navigateTo(post);
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing post view:', error);
+      }
       break;
       
     default:

@@ -10,7 +10,7 @@ class HiddenShapeGame {
     this.username = '';
     this.postId = '';
     this.guessCount = 0;
-    this.selectedShape = 'circle';
+    this.selectedShape = 'square';
     this.selectedColor = 'red';
     this.shapeSize = 30; // Default size for shapes
     this.hiddenShape = null;
@@ -298,6 +298,16 @@ class HiddenShapeGame {
                 true
               );
               this.renderer.drawPersonalResultHeatmap(this.userGuess, this.allGuesses, this.hiddenShape);
+              
+              // Request a post refresh from Devvit after a short delay
+              
+              setTimeout(() => {
+                // This ensures the post view is refreshed to show Results
+                this.sendWebViewMessage({
+                  type: 'refreshPost',
+                  data: { postId: this.postId }
+                });
+              }, 1000);
             } else {
               this.showNotification(message.data.message);
             }

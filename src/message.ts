@@ -104,7 +104,8 @@ export type WebViewMessage =
   | { type: 'webViewReady' }
   | { type: 'createGamePost'; data: ShapeData; canvasConfig: CanvasConfig }
   | { type: 'recordGuess'; data: GuessData }
-  | { type: 'revealShape' };
+  | { type: 'revealShape' }
+  | { type: 'refreshPost'; data: { postId: string } };
 
 /**
  * Web view MessageEvent listener data type. The Devvit API wraps all messages

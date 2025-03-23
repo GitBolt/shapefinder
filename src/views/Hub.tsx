@@ -153,7 +153,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
         gap="medium"
       >
         <hstack alignment="center middle" width="100%">
-          <text size="xxlarge" weight="bold" color="#1a365d">Game Statistics</text>
+          <text size="xxlarge" weight="bold" color="#1a365d">Game Stats</text>
           <spacer grow />
           <button
             appearance="secondary"
@@ -251,7 +251,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#0077cc">Create a Game</text>
                 <text
-                  size="medium"
+                  size="small"
                   color="#1d7aff"
                   alignment="start"
                   width="100%"
@@ -273,7 +273,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#00875a">Share with Friends</text>
                 <text
-                  size="medium"
+                  size="small"
                   color="#14ac25"
                   alignment="start"
                   width="100%"
@@ -295,7 +295,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#cb940c">Find the Shape</text>
                 <text
-                  size="medium"
+                  size="small"
                   color="#c68500"
                   alignment="start"
                   width="100%"
@@ -317,7 +317,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
               <vstack alignment="start" width="90%">
                 <text weight="bold" color="#a900b9">See Results</text>
                 <text
-                  size="medium"
+                  size="small"
                   color="#c100a2"
                   alignment="start"
                   width="100%"
