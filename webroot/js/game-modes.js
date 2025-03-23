@@ -161,7 +161,7 @@ export class GameModes {
     // Create more engaging result message
     let resultText;
     if (isCorrect) {
-      resultText = `<span class="result-success">Great job!</span>!`;
+      resultText = `<span class="result-success">Great job!</span>`;
     } else {
       resultText = `<span class="result-miss">Not quite!</span>`;
     }
