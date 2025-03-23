@@ -220,6 +220,12 @@ export class EventHandlers {
     // Use the central method to generate background shapes
     this.generateBackgroundShapes();
     
+    // Remove any active attention classes once the background is generated
+    const regenerateButtons = document.querySelectorAll('.needs-attention');
+    regenerateButtons.forEach(btn => {
+      btn.classList.remove('active-attention');
+    });
+    
     // Notification removed as requested
   }
   
@@ -236,6 +242,16 @@ export class EventHandlers {
     if (!this.game.canvasConfig) {
       // If no background shapes yet, notify the user instead of auto-generating
       this.game.showNotification('Please create background shapes first!');
+      
+      // Highlight the regenerate shapes button with animation
+      const regenerateBtn = document.getElementById('regenerate-shapes');
+      if (regenerateBtn) {
+        regenerateBtn.classList.add('active-attention');
+        // Remove the animation after a few seconds
+        setTimeout(() => {
+          regenerateBtn.classList.remove('active-attention');
+        }, 3000);
+      }
       return;
     }
     
@@ -274,6 +290,16 @@ export class EventHandlers {
     if (!this.game.canvasConfig) {
       // If no background shapes yet, notify the user instead of auto-generating
       this.game.showNotification('Please create background shapes first!');
+      
+      // Highlight the regenerate shapes button with animation
+      const regenerateBtn = document.getElementById('regenerate-shapes-creator');
+      if (regenerateBtn) {
+        regenerateBtn.classList.add('active-attention');
+        // Remove the animation after a few seconds
+        setTimeout(() => {
+          regenerateBtn.classList.remove('active-attention');
+        }, 3000);
+      }
       return;
     }
     

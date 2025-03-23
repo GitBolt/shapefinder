@@ -1275,7 +1275,6 @@ p {
   font-weight: 600;
   color: var(--primary-color);
   font-family: 'Nunito', sans-serif;
-  animation: pulse 1.5s infinite;
 }
 
 .loader {
@@ -1335,4 +1334,48 @@ p {
   50% {
     transform: translateY(-15px);
   }
-} 
+}
+
+/* Animated border for the Create Background button when it needs attention */
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 145, 111, 0.825);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 107, 61, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 61, 0);
+  }
+}
+
+@keyframes border-flash {
+  0% {
+    border-color: var(--primary-color);
+  }
+  50% {
+    border-color: var(--accent-2);
+  }
+  100% {
+    border-color: var(--primary-color);
+  }
+}
+
+.needs-attention {
+  position: relative;
+  animation: pulse-border 1.5s infinite, border-flash 1.5s infinite;
+  border-width: 2px !important;
+}
+
+
+.needs-attention.active-attention {
+  animation: pulse-border 1.5s infinite, border-flash 1.5s infinite;
+  border-width: 2px !important;
+  box-shadow: 0 0 10px rgba(255, 107, 61, 0.7);
+  transform: translateY(0) !important;
+}
+
+
+.needs-attention:not(.active-attention) {
+  animation: none;
+}
