@@ -15,7 +15,7 @@ Devvit.configure({
 
 // Add a custom post type for Hidden Shape game
 Devvit.addCustomPostType({
-  name: 'Hidden Shape',
+  name: 'Where\'s the Shape? Game Hub',
   height: 'tall',
   render: (context) => {
     // Load username with `useAsync` hook
@@ -23,14 +23,13 @@ Devvit.addCustomPostType({
       return (await context.reddit.getCurrentUsername()) ?? 'anon';
     });
 
-    // Get the post title
     const [postTitle] = useState<string>(async () => {
       const post = await context.reddit.getPostById(context.postId ?? '');
       return post?.title ?? '';
     });
 
     // Check if this is a hub post
-    const isHubPost = postTitle === 'Hidden Shape Game Hub';
+    const isHubPost = postTitle === 'Where\'s the Shape? Game Hub';
 
     // Only load game data if not a hub post
     const [gameData] = useState<ShapeData | null>(async () => {
@@ -40,7 +39,7 @@ Devvit.addCustomPostType({
       return hiddenShapeData ? JSON.parse(hiddenShapeData) : null;
     });
 
-    // Load canvas configuration for the Where's Waldo style game
+    // Load canvas configuration
     const [canvasConfig] = useState<CanvasConfig | null>(async () => {
       if (isHubPost) return null;
       
@@ -82,7 +81,6 @@ Devvit.addCustomPostType({
 
     // Setup the web view with message handlers
     const webView = useWebView<WebViewMessage, DevvitMessage>({
-      // URL of your web view content
       url: 'index.html',
 
       // Handle messages sent from the web view
@@ -105,7 +103,7 @@ Devvit.addCustomPostType({
         );
       },
       onUnmount() {
-        context.ui.showToast({ text: 'Hidden Shape closed!' });
+        context.ui.showToast({ text: 'Game closed' });
       },
     });
 
@@ -113,6 +111,7 @@ Devvit.addCustomPostType({
     if (isHubPost) {
       return <HubView webView={webView} context={context} />;
     }
+
     // If we're showing a game post that someone else created
     else if (gameData && canvasConfig) {
       // Check if the user has already played
@@ -176,11 +175,10 @@ Devvit.addCustomPostType({
         );
       }
     } else {
-      // Render the creator state for a new empty game post (shouldn't typically happen)
+      // When the post is neither hub nor a game (shouldn't typically happen)
       return <EmptyGameView webView={webView} />;
     }
   },
 });
 
-// Remove the old menu item that creates individual game posts - we'll now use the hub
 export default Devvit;

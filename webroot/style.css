@@ -86,9 +86,9 @@ body {
 }
 
 h1 {
-  font-size: 2.75rem;
+  font-size: 2rem;
   color: var(--primary-color);
-  margin: 0.75rem 0 1rem;
+  margin: 0;
   text-align: center;
   font-weight: 800;
   font-family: 'Nunito', sans-serif;
@@ -743,19 +743,22 @@ p {
 .canvas-buttons .action-btn {
   flex: 1;
   margin-top: 0;
-  white-space: nowrap;
-  display: block;
-  height: auto;
-  min-height: 40px;
+  white-space: normal;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  height: auto;
+  min-height: 60px;
+  padding: 0.75rem 0.5rem;
+  line-height: 1.2;
 }
 
 .canvas-buttons .action-btn {
-  padding: 0.75rem 0.5rem;
+  font-weight: 600;
 }
 
 .canvas-buttons .secondary-btn {
-  padding: 0.75rem 0.5rem;
   font-weight: 600;
 }
 
@@ -1289,7 +1292,6 @@ p {
   width: 30px;
   height: 30px;
   position: relative;
-  animation: bounce 1.2s infinite;
 }
 
 .shape-loader.square {
