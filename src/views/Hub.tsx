@@ -177,7 +177,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
           >
             <hstack width="100%" alignment="middle center">
               <text color="white" weight="bold" size="large">
-                Join by Game ID
+                Search Game by ID
               </text>
             </hstack>
           </vstack>

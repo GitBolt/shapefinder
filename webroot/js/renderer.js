@@ -12,6 +12,73 @@ export class Renderer {
     
     // Canvas configuration for Shape Seeker style game
     this.canvasConfig = null;
+    
+    // Initialize gameMode to ensure particles display correctly 
+    this.gameMode = 'hub';
+    
+    // Background particles system
+    this.particles = [];
+    this.particleCount = 30;
+    this.particleAnimation = null;
+    
+    // User shape placement tracking
+    this.hasPlacedShape = false;
+    this.userShapeInfo = null;
+    
+    // Countdown state tracking
+    this.isCountingDown = false;
+    
+    // Initialize particles
+    this.initParticles();
+  }
+  
+  // Initialize background particle system
+  initParticles() {
+    const width = this.shapeCloudCanvas.width;
+    const height = this.shapeCloudCanvas.height;
+    const shapeTypes = ['circle', 'square', 'triangle', 'star'];
+    const colors = ['rgba(255, 107, 107, 0.3)', 'rgba(81, 207, 102, 0.3)', 
+                    'rgba(51, 154, 240, 0.3)', 'rgba(255, 212, 59, 0.3)'];
+    
+    // Create particles
+    for (let i = 0; i < this.particleCount; i++) {
+      this.particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 30 + 15,
+        speedX: Math.random() * 0.5 - 0.25,
+        speedY: Math.random() * 0.5 - 0.25,
+        rotation: 0,
+        rotationSpeed: Math.random() * 0.02 - 0.01,
+        shapeType: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: Math.random() * 0.3 + 0.3
+      });
+    }
+    
+    // Start animation loop
+    this.animateParticles();
+  }
+  
+  // Animate background particles
+  animateParticles() {
+    // Cancel any existing animation
+    if (this.particleAnimation) {
+      cancelAnimationFrame(this.particleAnimation);
+    }
+    
+    const animate = () => {
+      // We no longer animate anything in this loop
+      this.particleAnimation = requestAnimationFrame(animate);
+    };
+    
+    animate();
+  }
+  
+  // Draw background particles - no longer used
+  drawParticles() {
+    // We're no longer drawing particles on the canvas
+    return;
   }
   
   generateRandomShapesCanvas(width, height, targetShape) {
@@ -140,12 +207,45 @@ export class Renderer {
   setCanvasConfig(config) {
     console.log('Setting canvas config', config);
     this.canvasConfig = config;
+    
+    // Clear interaction layer without losing user shape
+    const tempUserShape = this.hasPlacedShape ? this.userShapeInfo : null;
+    
+    // Clear interaction layer (where particles are drawn)
+    this.interactionCtx.clearRect(0, 0, this.interactionLayer.width, this.interactionLayer.height);
+    
     this.renderShapeSeekerCanvas();
+    
+    // Redraw user shape if needed
+    if (tempUserShape && (this.gameMode === 'hub' || this.gameMode === 'creator')) {
+      // Re-draw the user shape after canvas is rendered
+      const info = tempUserShape;
+      
+      if (info.highlight) {
+        this.interactionCtx.beginPath();
+        this.interactionCtx.arc(info.x, info.y, info.customSize, 0, Math.PI * 2);
+        this.interactionCtx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+        this.interactionCtx.fill();
+      }
+      
+      this.interactionCtx.globalAlpha = info.highlight ? 1 : 0.8;
+      this.interactionCtx.fillStyle = getColorValue(info.selectedColor);
+      
+      this.drawShape(this.interactionCtx, info.selectedShape, info.x, info.y, info.customSize);
+      
+      this.interactionCtx.globalAlpha = 1;
+    }
   }
   
   renderShapeSeekerCanvas() {
     if (!this.canvasConfig) {
       console.warn('No canvas config set');
+      return;
+    }
+    
+    // Skip rendering initially if in guesser mode and counting down
+    if (this.gameMode === 'guesser' && this.isCountingDown) {
+      console.log('Skipping render during countdown');
       return;
     }
     
@@ -160,6 +260,13 @@ export class Renderer {
     
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Add subtle gradient to the canvas background
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+    gradient.addColorStop(1, 'rgba(240, 240, 240, 0.5)');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
     
     // Draw background shapes by layer
@@ -187,22 +294,16 @@ export class Renderer {
     
     // Always draw the target shape for guesser mode
     if (this.canvasConfig.targetShape) {
-      // In creator or hub mode, don't draw the target shape - user will place it
-      // In guesser or results mode, always draw the target shape
-      if (this.gameMode === 'guesser' || 
-          this.gameMode === 'results' || 
-          this.gameMode === 'personal-results') {
-        const target = this.canvasConfig.targetShape;
-        console.log('Drawing target shape:', target);
-        
-        ctx.globalAlpha = target.opacity || 0.85;
-        ctx.fillStyle = getColorValue(target.color);
-        // Use the target's custom size or default to 30
-        const targetSize = target.size || 30;
-        this.drawShape(ctx, target.shapeType, target.x, target.y, targetSize);
-      } else {
-        console.log('Not drawing target shape. Mode:', this.gameMode);
-      }
+      // Always draw the target shape in all modes
+      const target = this.canvasConfig.targetShape;
+      console.log('Drawing target shape:', target);
+      
+      // Draw the target shape normally, without any special effects
+      ctx.globalAlpha = target.opacity || 0.85;
+      ctx.fillStyle = getColorValue(target.color);
+      // Use the target's custom size or default to 30
+      const targetSize = target.size || 30;
+      this.drawShape(ctx, target.shapeType, target.x, target.y, targetSize);
     }
   }
   
@@ -280,6 +381,14 @@ export class Renderer {
   
   drawHiddenShape(x, y, gameMode, selectedShape, selectedColor, hiddenShape, highlight = false, customSize = 30) {
     this.gameMode = gameMode;
+    
+    // Save user shape information for potential redrawing
+    if (gameMode === 'creator' || gameMode === 'hub') {
+      this.hasPlacedShape = true;
+      this.userShapeInfo = {
+        x, y, selectedShape, selectedColor, customSize, highlight
+      };
+    }
     
     const ctx = this.interactionCtx;
     const size = customSize;
@@ -448,26 +557,26 @@ export class Renderer {
     const midX = (userGuess.x + hiddenShape.x) / 2;
     const midY = (userGuess.y + hiddenShape.y) / 2;
     ctx.fillText(`${Math.round(distance)}px`, midX, midY - 5);
-    
+
     ctx.beginPath();
     ctx.arc(userGuess.x, userGuess.y, 8, 0, Math.PI * 2);
     ctx.fillStyle = userGuess.isCorrect 
       ? 'rgba(0, 255, 0, 0.8)' 
       : 'rgba(255, 69, 0, 0.8)';
     ctx.fill();
-    
+
     ctx.font = '14px sans-serif';
     ctx.fillStyle = '#000';
     ctx.textAlign = 'center';
     ctx.fillText('Your Guess', userGuess.x, userGuess.y - 15);
-    
+
     // Draw target indicator
     ctx.beginPath();
     ctx.arc(hiddenShape.x, hiddenShape.y, 15, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(255, 255, 0, 0.9)';
     ctx.lineWidth = 3;
     ctx.stroke();
-    
+
     ctx.beginPath();
     ctx.moveTo(hiddenShape.x - 15, hiddenShape.y);
     ctx.lineTo(hiddenShape.x + 15, hiddenShape.y);
@@ -475,12 +584,12 @@ export class Renderer {
     ctx.lineTo(hiddenShape.x, hiddenShape.y + 15);
     ctx.strokeStyle = 'rgba(255, 255, 0, 0.9)';
     ctx.stroke();
-    
+
     ctx.font = '14px sans-serif';
     ctx.fillStyle = '#000';
     ctx.textAlign = 'center';
     ctx.fillText('Target', hiddenShape.x, hiddenShape.y - 25);
-    
+
     allGuesses.forEach(guess => {
       if (Math.abs(guess.x - userGuess.x) < 5 && Math.abs(guess.y - userGuess.y) < 5) {
         return;
@@ -501,4 +610,13 @@ export class Renderer {
       }
     });
   }
-} 
+
+  // Add methods to pause and resume animation
+  pauseAnimation() {
+    this.isCountingDown = true;
+  }
+
+  resumeAnimation() {
+    this.isCountingDown = false;
+  }
+}

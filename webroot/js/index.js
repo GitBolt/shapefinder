@@ -192,12 +192,33 @@ class ShapeSeekerGame {
       } else {
         this.gameMode = 'guesser';
         this.renderer.gameMode = 'guesser'; // Set renderer's game mode
+        
+        // Immediately set counting down to true to prevent premature rendering
+        this.renderer.isCountingDown = true;
+        
         this.gameModes.showShapeSeekerGuesserMode(this.hiddenShape, this.guessCount);
+        
+        // Create canvas cover immediately to hide the canvas before countdown starts
+        const canvasContainer = document.getElementById('game-canvas-container');
+        if (canvasContainer) {
+          const canvasCover = document.createElement('div');
+          canvasCover.id = 'canvas-cover';
+          canvasCover.style.position = 'absolute';
+          canvasCover.style.top = '0';
+          canvasCover.style.left = '0';
+          canvasCover.style.width = '100%';
+          canvasCover.style.height = '100%';
+          canvasCover.style.backgroundColor = 'var(--canvas-bg)';
+          canvasCover.style.zIndex = '10';
+          canvasCover.style.borderRadius = 'var(--border-radius)';
+          canvasContainer.style.position = 'relative';
+          canvasContainer.appendChild(canvasCover);
+        }
         
         // Start the timer for guessing mode
         setTimeout(() => {
           this.eventHandlers.startTimer();
-        }, 500); // Slight delay to ensure UI is ready
+        }, 100); // Reduced delay to ensure countdown starts quickly
       }
       
       // Ensure the renderer re-renders with the correct target shape

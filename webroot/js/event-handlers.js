@@ -489,61 +489,141 @@ export class EventHandlers {
   }
   
   startTimer() {
-    // Clear any existing timer
+    // Clear any existing timers
     this.clearTimer();
     
-    // Reset time
+    // Reset the time remaining to 5 seconds
     this.timeRemaining = 5;
     
-    // Store start time for calculating seconds taken
-    this.startTime = Date.now();
-    
-    // Get timer elements
+    // Get the timer elements
     const timerProgress = document.getElementById('timer-progress');
     const timerText = document.getElementById('timer-text');
+    const timerBar = document.getElementById('timer-bar');
     
-    if (!timerProgress || !timerText) return;
+    // Temporarily disable interaction with the canvas
+    const interactionLayer = this.game.interactionLayer;
+    interactionLayer.style.pointerEvents = 'none';
     
-    // Set initial state
-    timerProgress.style.width = '100%';
-    timerText.textContent = this.timeRemaining;
-    timerProgress.classList.remove('timer-progress-low');
-    timerText.classList.remove('timer-low');
+    // Pause renderer animation
+    this.renderer.pauseAnimation();
     
-    // Start the timer
-    this.timerInterval = setInterval(() => {
-      this.timeRemaining -= 1;
+    // Hide canvas completely before showing countdown
+    // First get canvas container
+    const canvasContainer = document.getElementById('game-canvas-container');
+    // Only create a canvas cover if one doesn't already exist
+    if (canvasContainer && !document.getElementById('canvas-cover')) {
+      // Add an opaque temporary cover over the game area
+      const canvasCover = document.createElement('div');
+      canvasCover.id = 'canvas-cover';
+      canvasCover.style.position = 'absolute';
+      canvasCover.style.top = '0';
+      canvasCover.style.left = '0';
+      canvasCover.style.width = '100%';
+      canvasCover.style.height = '100%';
+      canvasCover.style.backgroundColor = 'var(--canvas-bg)';
+      canvasCover.style.zIndex = '10';
+      canvasCover.style.borderRadius = 'var(--border-radius)';
+      canvasContainer.style.position = 'relative';
+      canvasContainer.appendChild(canvasCover);
+    }
+    
+    // Create countdown overlay
+    const countdownOverlay = document.createElement('div');
+    countdownOverlay.className = 'countdown-overlay';
+    countdownOverlay.innerHTML = `
+      <div class="countdown-container">
+        <div class="countdown-number">3</div>
+        <div class="countdown-shapes">
+          <div class="countdown-shape shape-circle"></div>
+          <div class="countdown-shape shape-square"></div>
+          <div class="countdown-shape shape-triangle"></div>
+          <div class="countdown-shape shape-star"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(countdownOverlay);
+    
+    // Start the countdown animation
+    let count = 3;
+    const countdownElement = countdownOverlay.querySelector('.countdown-number');
+    
+    const countdownInterval = setInterval(() => {
+      count--;
       
-      // Update UI
-      timerText.textContent = this.timeRemaining;
-      const progressWidth = (this.timeRemaining / 5) * 100;
-      timerProgress.style.width = `${progressWidth}%`;
-      
-      // Add low time warning when 2 seconds or less remain
-      if (this.timeRemaining <= 2) {
-        timerProgress.classList.add('timer-progress-low');
-        timerText.classList.add('timer-low');
-      }
-      
-      // Time's up! Auto-submit if the user hasn't guessed
-      if (this.timeRemaining <= 0) {
-        this.clearTimer();
+      if (count > 0) {
+        // Update the number with animation
+        countdownElement.style.animation = 'none';
+        countdownElement.offsetHeight; // Trigger reflow
+        countdownElement.textContent = count;
+        countdownElement.style.animation = 'countdownPulse 1s';
+      } else if (count === 0) {
+        // Show GO!
+        countdownElement.textContent = 'GO!';
+        countdownElement.style.color = '#4CAF50';
+        countdownElement.style.animation = 'countdownGo 0.5s';
+      } else {
+        // Remove countdown and start the game timer
+        clearInterval(countdownInterval);
+        countdownOverlay.classList.add('fade-out');
         
-        // If user hasn't made a guess yet, create a random one
-        if (!this.game.userGuess) {
-          // Create a random guess position
-          const canvasWidth = this.game.interactionLayer.width;
-          const canvasHeight = this.game.interactionLayer.height;
-          const randomX = Math.floor(Math.random() * canvasWidth);
-          const randomY = Math.floor(Math.random() * canvasHeight);
+        setTimeout(() => {
+          countdownOverlay.remove();
           
-          // Draw the random guess
-          this.renderer.drawGuess(randomX, randomY);
-          this.game.userGuess = { x: randomX, y: randomY };
-        }
-        
-        // Auto-submit
-        this.submitGuess();
+          // Remove the canvas cover to show the game
+          const canvasCover = document.getElementById('canvas-cover');
+          if (canvasCover) {
+            canvasCover.remove();
+          }
+          
+          // Re-enable interaction with the canvas
+          interactionLayer.style.pointerEvents = 'auto';
+          
+          // Resume renderer animation
+          this.renderer.resumeAnimation();
+          
+          // Record the start time
+          this.startTime = Date.now();
+          
+          // Initial timer display setup
+          if (timerProgress) timerProgress.style.width = '100%';
+          if (timerText) timerText.textContent = this.timeRemaining;
+          
+          // Start the actual game timer
+          this.timerInterval = setInterval(() => {
+            this.timeRemaining -= 1;
+            
+            // Update timer display
+            if (timerText) timerText.textContent = this.timeRemaining;
+            if (timerProgress) {
+              const progressWidth = (this.timeRemaining / 5) * 100;
+              timerProgress.style.width = `${progressWidth}%`;
+              
+              // Change color when time is running out
+              if (this.timeRemaining <= 2) {
+                timerProgress.style.backgroundColor = '#f44336';
+                if (timerText) timerText.classList.add('timer-low');
+              }
+            }
+            
+            // Time's up
+            if (this.timeRemaining <= 0) {
+              this.clearTimer();
+              
+              // If no guess was made, make a random guess
+              if (!this.game.userGuess) {
+                // Create a random guess
+                const x = Math.random() * this.game.shapeCloudCanvas.width;
+                const y = Math.random() * this.game.shapeCloudCanvas.height;
+                
+                this.renderer.drawGuess(x, y);
+                this.game.userGuess = { x, y };
+              }
+              
+              // Automatically submit the guess
+              this.submitGuess();
+            }
+          }, 1000);
+        }, 500);
       }
     }, 1000);
   }
@@ -553,6 +633,21 @@ export class EventHandlers {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
     }
+    
+    // Remove any countdown overlay that might be present
+    const existingOverlay = document.querySelector('.countdown-overlay');
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+    
+    // Remove any canvas cover
+    const canvasCover = document.getElementById('canvas-cover');
+    if (canvasCover) {
+      canvasCover.remove();
+    }
+    
+    // Ensure renderer animation is resumed
+    this.renderer.resumeAnimation();
   }
   
   submitGuess() {
@@ -572,6 +667,21 @@ export class EventHandlers {
       console.log('Time taken to guess:', secondsTaken, 'seconds');
     }
     
+    // Check if the guess is correct (approximate hit within tolerance)
+    if (this.game.hiddenShape) {
+      const dx = this.game.userGuess.x - this.game.hiddenShape.x;
+      const dy = this.game.userGuess.y - this.game.hiddenShape.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Set a tolerance for "correct" guesses (e.g., within 25px of the hidden shape center)
+      const isCorrect = distance <= 25;
+      
+      // If correct, show confetti
+      if (isCorrect) {
+        this.showConfetti();
+      }
+    }
+    
     this.game.sendWebViewMessage({
       type: 'recordGuess',
       data: {
@@ -579,8 +689,48 @@ export class EventHandlers {
         secondsTaken: secondsTaken
       }
     });
+  }
+  
+  showConfetti() {
+    // Create confetti container
+    const confettiContainer = document.createElement('div');
+    confettiContainer.className = 'confetti-container';
+    document.body.appendChild(confettiContainer);
     
-    // Show a submitting notification
-    this.game.showNotification('Submitting your guess...', 2000, 'info');
+    // Generate 50 confetti pieces
+    const colors = ['#ff6b6b', '#4dabf7', '#69db7c', '#ffd43b', '#b197fc'];
+    
+    for (let i = 0; i < 50; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      
+      // Random position, color, rotation speed, and fall duration
+      const left = Math.random() * 100;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const rotation = Math.random() * 360;
+      const animationDuration = (Math.random() * 3) + 2; // 2-5 seconds
+      
+      // Random shape (square, circle, or rectangle)
+      const shapeType = Math.floor(Math.random() * 3);
+      
+      confetti.style.left = `${left}vw`;
+      confetti.style.backgroundColor = color;
+      confetti.style.transform = `rotate(${rotation}deg)`;
+      confetti.style.animationDuration = `${animationDuration}s`;
+      
+      if (shapeType === 1) {
+        confetti.style.borderRadius = '50%'; // Circle
+      } else if (shapeType === 2) {
+        confetti.style.width = '5px';
+        confetti.style.height = '15px';
+      }
+      
+      confettiContainer.appendChild(confetti);
+    }
+    
+    // Remove confetti after animation completes
+    setTimeout(() => {
+      confettiContainer.remove();
+    }, 5000);
   }
 } 
