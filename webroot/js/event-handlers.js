@@ -495,6 +495,9 @@ export class EventHandlers {
     // Reset the time remaining to 5 seconds
     this.timeRemaining = 5;
     
+    // Play countdown sound
+    this.game.audioManager.playCountdown();
+    
     // Get the timer elements
     const timerProgress = document.getElementById('timer-progress');
     const timerText = document.getElementById('timer-text');
@@ -676,9 +679,12 @@ export class EventHandlers {
       // Set a tolerance for "correct" guesses (e.g., within 25px of the hidden shape center)
       const isCorrect = distance <= 25;
       
-      // If correct, show confetti
+      // Play correct sound effect if guess is correct, otherwise play incorrect sound
       if (isCorrect) {
+        this.game.audioManager.playWin();
         this.showConfetti();
+      } else {
+        this.game.audioManager.playLose();
       }
     }
     

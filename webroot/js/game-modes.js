@@ -142,6 +142,9 @@ export class GameModes {
     if (statsContainer) {
       statsContainer.style.display = 'block';
     }
+    
+    // Play the win sound when showing results
+    this.game.audioManager.playWin();
   }
   
   showPersonalResultsMode(hiddenShape, guessCount, isCorrect = false, userGuess = null) {

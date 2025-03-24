@@ -2,6 +2,7 @@ import { Renderer } from './renderer.js';
 import { GameModes } from './game-modes.js';
 import { EventHandlers } from './event-handlers.js';
 import { showNotification } from './utils.js';
+import { AudioManager } from './audio-manager.js';
 
 class ShapeSeekerGame {
   constructor() {
@@ -22,6 +23,9 @@ class ShapeSeekerGame {
     this.repeatedShapesRemoved = false; // Track if repeated shapes have been removed
     this.initialShape = null; // Track initial shape used for background generation
     this.initialColor = null; // Track initial color used for background generation
+    
+    // Initialize audio manager
+    this.audioManager = new AudioManager();
     
     // DOM elements
     this.shapeCloudCanvas = document.getElementById('shape-cloud');

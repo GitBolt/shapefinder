@@ -8,6 +8,10 @@
     <meta charset="UTF-8" />
     <title>Shape Seeker</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Preload audio files -->
+    <link rel="preload" href="./assets/countdown.mp3" as="audio" type="audio/mpeg">
+    <link rel="preload" href="./assets/win.mp3" as="audio" type="audio/mpeg">
+    <link rel="preload" href="./assets/lose.mp3" as="audio" type="audio/mpeg">
     <style>
       /* Adding subtle animations and transitions */
       .game-controls {
@@ -763,5 +767,6 @@
     <script src="js/utils.js" type="module"></script>
     <script src="js/index.js" type="module"></script>
     <script src="js/background-particles.js" type="module"></script>
+    <script src="js/audio-manager.js" type="module"></script>
   </body>
 </html> 

@@ -19,8 +19,19 @@ Devvit.addCustomPostType({
   name: 'Shape Seeker Game Hub',
   height: 'tall',
   render: (context) => {
+    // Using Record<string, any> to satisfy the JSONObject constraint
+    type GameInfo = {
+      username: string;
+      title: string;
+      isHubPost: boolean;
+      gameData: any;
+      canvasConfig: any;
+      isRevealed: boolean;
+      guessCount: number;
+    };
+
     // For strongly typed data, we'll use separate variables that get populated from async state
-    const [gameInfo] = useState(async () => {
+    const [gameInfo] = useState<GameInfo | null>(async () => {
       // Check if username and post title can be fetched in parallel
       const [username, postInfo] = await Promise.all([
         context.reddit.getCurrentUsername().then(name => name ?? 'anon'),
@@ -163,7 +174,15 @@ Devvit.addCustomPostType({
       // If not hub, it must be a game post
       if (gameData && canvasConfig) {
         // User guess and stats data
-        const [userGuessAndStats] = useState(async () => {
+        type UserGuessAndStats = {
+          userGuess: any;
+          stats: {
+            correctGuesses: number;
+            totalGuesses: number;
+          };
+        };
+        
+        const [userGuessAndStats] = useState<UserGuessAndStats | null>(async () => {
           // Get user's guess and stats in parallel
           const [userData, guessesJson] = await Promise.all([
             context.redis.get(`hiddenshape_user_${context.postId}_${username}`),
