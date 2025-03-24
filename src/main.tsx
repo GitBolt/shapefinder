@@ -8,6 +8,7 @@ import { Start } from './views/Start.js';
 import { Hub } from './views/Hub.js';
 import { Complete } from './views/Complete.js';
 import { Results } from './views/Results.js';
+import { generateGameId } from './util/gameId.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -61,8 +62,36 @@ Devvit.addCustomPostType({
       let canvasConfig = null;
       
       try {
-        if (hiddenShapeData) gameData = JSON.parse(hiddenShapeData);
-        if (canvasConfigData) canvasConfig = JSON.parse(canvasConfigData);
+        if (hiddenShapeData) {
+          gameData = JSON.parse(hiddenShapeData) as ShapeData;
+          
+          // Add gameId if it doesn't exist (for backwards compatibility)
+          if (!gameData.gameId) {
+            gameData.gameId = generateGameId();
+            
+            // Store updated data and create an index for the game ID
+            if (context.postId) {
+              await Promise.all([
+                context.redis.set(
+                  `hiddenshape_data_${context.postId}`,
+                  JSON.stringify(gameData)
+                ),
+                context.redis.set(
+                  `hiddenshape_id_index_${gameData.gameId}`,
+                  context.postId
+                )
+              ]);
+            }
+          } else if (context.postId) {
+            // Make sure the ID index exists even for games that already have an ID
+            await context.redis.set(
+              `hiddenshape_id_index_${gameData.gameId}`,
+              context.postId
+            );
+          }
+        }
+        
+        if (canvasConfigData) canvasConfig = JSON.parse(canvasConfigData) as CanvasConfig;
       } catch (e) {
         console.error('Error parsing data:', e);
       }

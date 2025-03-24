@@ -31,6 +31,21 @@ export function Complete({
           The hidden <text weight="bold" color={gameData.color}>{gameData.shapeType}</text> has been revealed
         </text>
         
+        <spacer size="small" />
+        
+        {/* Display game ID */}
+        <hstack
+          backgroundColor="#f0f8ff"
+          padding="small"
+          cornerRadius="medium"
+          alignment="center middle"
+        >
+          <text size="large" weight="bold" color="#3e6b9d">Game ID:</text>
+          <spacer size="small" />
+          <text size="xlarge" weight="bold" color="#1e4b8a">{gameData.gameId || '----'}</text>
+        </hstack>
+        
+        <spacer size="small" />
         <spacer size="medium" />
         
         <hstack gap="medium" alignment="center middle" width="100%">

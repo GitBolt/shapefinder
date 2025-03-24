@@ -1,6 +1,7 @@
 import { Context, Devvit } from '@devvit/public-api';
 import type { WebViewMessage, DevvitMessage, ShapeData, GuessData, HeatmapGuessData } from '../message.js';
 import { LoadingScreen } from '../components/LoadingScreen.js';
+import { generateGameId } from './gameId.js';
 
 /**
  * Handles the WebView message communication
@@ -99,9 +100,12 @@ export async function handleWebViewMessage(
         return;
       }
       
+      // Generate a unique 4-digit game ID
+      const gameId = generateGameId();
+      
       // Create a new post for this game
       const gamePost = await context.reddit.submitPost({
-        title: `Find the Hidden ${message.data.shapeType} - ${new Date().toLocaleString()}`,
+        title: `Find the Hidden ${message.data.shapeType} - ID: ${gameId} - ${new Date().toLocaleString()}`,
         subredditName: await (await context.reddit.getCurrentSubreddit()).name,
         preview: (
           <LoadingScreen text='Loading Game...'/>
@@ -112,6 +116,7 @@ export async function handleWebViewMessage(
       const shapeData = {
         ...message.data,
         postId: gamePost.id,  // Use the new post ID
+        gameId: gameId,       // Include the game ID
       };
       
       // Store multiple pieces of data in Redis in parallel
@@ -138,6 +143,12 @@ export async function handleWebViewMessage(
         context.redis.set(
           `hiddenshape_allguesses_${gamePost.id}`,
           "[]"
+        ),
+        
+        // Index the game by ID for easy lookups
+        context.redis.set(
+          `hiddenshape_id_index_${gameId}`,
+          gamePost.id
         )
       ]);
       

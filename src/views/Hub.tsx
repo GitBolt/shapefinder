@@ -3,6 +3,7 @@ import { useState } from '@devvit/public-api';
 import type { Context } from '@devvit/public-api';
 import { StatsView } from '../components/StatsView.js';
 import { GuideView } from '../components/GuideView.js';
+import { JoinGameForm } from '../components/JoinGameForm.js';
 
 /**
  * HubView component for the game creator hub post
@@ -10,6 +11,7 @@ import { GuideView } from '../components/GuideView.js';
 export function Hub({ webView, context }: { webView: any, context: Context }) {
   const [showingStats, setShowingStats] = useState(false);
   const [showingGuide, setShowingGuide] = useState(false);
+  const [showingJoinForm, setShowingJoinForm] = useState(false);
 
   // Fetch stats from Redis using the global counters with caching
   const [gameStats] = useState<{
@@ -57,6 +59,56 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
       };
     }
   });
+
+  // Function to handle joining a game by ID
+  const handleJoinGame = async (gameId: string) => {
+    try {
+      // Use the index to look up the game directly by ID
+      const postId = await context.redis.get(`hiddenshape_id_index_${gameId}`);
+      
+      if (postId) {
+        // Get the post
+        const post = await context.reddit.getPostById(postId);
+        if (post) {
+          context.ui.showToast({ text: `Found game with ID: ${gameId}!` });
+          context.ui.navigateTo(post);
+          return;
+        }
+      }
+      
+      // If no game was found through the index, try the old way (fallback for backwards compatibility)
+      const gamesListJson = await context.redis.get('hiddenshape_games_list');
+      const gamesList = gamesListJson ? JSON.parse(gamesListJson) : [];
+      
+      for (const gamePostId of gamesList) {
+        const gameDataJson = await context.redis.get(`hiddenshape_data_${gamePostId}`);
+        
+        if (gameDataJson) {
+          const gameData = JSON.parse(gameDataJson);
+          
+          // If we found a game with matching ID, navigate to it
+          if (gameData.gameId === gameId) {
+            // Index the game for future faster lookups
+            await context.redis.set(`hiddenshape_id_index_${gameId}`, gamePostId);
+            
+            // Get the post
+            const post = await context.reddit.getPostById(gamePostId);
+            if (post) {
+              context.ui.showToast({ text: `Found game with ID: ${gameId}!` });
+              context.ui.navigateTo(post);
+              return;
+            }
+          }
+        }
+      }
+      
+      // If no game was found
+      context.ui.showToast({ text: `No game found with ID: ${gameId}` });
+    } catch (error) {
+      console.error('Error searching for game:', error);
+      context.ui.showToast({ text: 'Error searching for game' });
+    }
+  };
 
   const renderMainView = () => (
     <zstack width="100%" height="100%" alignment='center middle'>
@@ -116,6 +168,21 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
           </vstack>
 
           <vstack
+            backgroundColor="#4299E1"
+            width="100%"
+            alignment="middle center"
+            padding="medium"
+            cornerRadius="full"
+            onPress={() => setShowingJoinForm(true)}
+          >
+            <hstack width="100%" alignment="middle center">
+              <text color="white" weight="bold" size="large">
+                Join by Game ID
+              </text>
+            </hstack>
+          </vstack>
+
+          <vstack
             backgroundColor="white"
             width="100%"
             alignment="middle center"
@@ -139,7 +206,6 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
             cornerRadius="full"
             onPress={() => setShowingStats(true)}
             borderColor="#007AFF"
-
           >
             <hstack width="100%" alignment="middle center">
               <text color="#007AFF" weight="bold" size="large">
@@ -155,12 +221,19 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
 
   return (
     <vstack grow cornerRadius="large" backgroundColor="white">
-      {showingStats ? 
-        <StatsView gameStats={gameStats} onBack={() => setShowingStats(false)} /> :
-        showingGuide ? 
-        <GuideView onBack={() => setShowingGuide(false)} /> :
+      {showingStats ? (
+        <StatsView gameStats={gameStats} onBack={() => setShowingStats(false)} />
+      ) : showingGuide ? (
+        <GuideView onBack={() => setShowingGuide(false)} />
+      ) : showingJoinForm ? (
+        <JoinGameForm 
+          onClose={() => setShowingJoinForm(false)} 
+          onJoinGame={handleJoinGame}
+          context={context} 
+        />
+      ) : (
         renderMainView()
-      }
+      )}
     </vstack>
   );
 } 

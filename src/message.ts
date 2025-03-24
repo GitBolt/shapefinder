@@ -5,6 +5,7 @@ export type ShapeData = {
   x: number;
   y: number;
   postId: string;
+  gameId: string; // 4-digit game ID
   opacity?: number;
 };
 

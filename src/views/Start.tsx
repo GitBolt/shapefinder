@@ -135,6 +135,18 @@ export function Start({
             {gameData.color.charAt(0).toUpperCase() + gameData.color.slice(1)}{" "}
             {gameData.shapeType.charAt(0).toUpperCase() + gameData.shapeType.slice(1)}?
           </text>
+          
+          {/* Display game ID */}
+          <hstack
+            backgroundColor="#f0f8ff"
+            padding="small"
+            cornerRadius="medium"
+            alignment="center middle"
+          >
+            <text size="large" weight="bold" color="#3e6b9d">Game ID:</text>
+            <spacer size="small" />
+            <text size="xlarge" weight="bold" color="#1e4b8a">{gameData.gameId || '----'}</text>
+          </hstack>
         </vstack>
 
         <hstack gap="medium" alignment="center middle" width="90%">
