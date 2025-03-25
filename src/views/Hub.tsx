@@ -20,10 +20,8 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
     successRate: number;
   }>(async () => {
     try {
-      // Use cache to reduce Redis calls and optimize performance
       return await context.cache(
         async () => {
-          // Fetch all stats in parallel
           const [totalGamesStr, totalGuessesStr, totalCorrectGuessesStr] = await Promise.all([
             context.redis.get('hiddenshape_total_games'),
             context.redis.get('hiddenshape_total_guesses'),
@@ -60,14 +58,11 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
     }
   });
 
-  // Function to handle joining a game by ID
   const handleJoinGame = async (gameId: string) => {
     try {
-      // Use the index to look up the game directly by ID
       const postId = await context.redis.get(`hiddenshape_id_index_${gameId}`);
       
       if (postId) {
-        // Get the post
         const post = await context.reddit.getPostById(postId);
         if (post) {
           context.ui.showToast({ text: `Found game with ID: ${gameId}!` });
@@ -102,7 +97,6 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
         }
       }
       
-      // If no game was found
       context.ui.showToast({ text: `No game found with ID: ${gameId}` });
     } catch (error) {
       console.error('Error searching for game:', error);
@@ -227,7 +221,7 @@ export function Hub({ webView, context }: { webView: any, context: Context }) {
         <GuideView onBack={() => setShowingGuide(false)} />
       ) : showingJoinForm ? (
         <JoinGameForm 
-          onClose={() => setShowingJoinForm(false)} 
+          onBack={() => setShowingJoinForm(false)} 
           onJoinGame={handleJoinGame}
           context={context} 
         />

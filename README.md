@@ -1,6 +1,6 @@
 # Shape Seeker
 
-Shape Seeker is an interactive Reddit game where players create and find a hidden shape within a visually complex background made up of other random shapes.
+Shape Seeker is a Reddit game where players create and find a hidden shape within a visually complex background made up of other random shapes.
 
 ![Shape Seeker Game](assets/title_text.png)
 
@@ -32,10 +32,10 @@ Shape Seeker is an interactive Reddit game where players create and find a hidde
 
 ## Game Overview
 
-Shape Seeker operates through a central Hub post where new games are created and shared. Each game is a Reddit post on it's own and consists of a single hidden target shape that players must locate within a complex visual background. Games track metrics such as:
+Shape Seeker operates through a central Hub post where new games are created and shared. Each game is a Reddit post on its own and consists of a single hidden target shape that players must locate within a complex visual background. Games track metrics such as:
 
-- Success rate (percentage of players who found the shape)
--  Time to find the shape
+- Success rate (average of players who found the shape)
+- Time to find the shape
 - Distance from the target for incorrect guesses
 
 One player can only attempt a game once
@@ -47,7 +47,7 @@ One player can only attempt a game once
 1. **Creating the Hub Post (Moderator Only)**
     - From the subreddit menu, click on "🎮 Create Shape Seeker Hub"
     - This creates a pinned post that serves as the control center for all Shape Seeker games
-    - The Hub post contains a guuide, stats, and the "Create Game" button
+    - The Hub post contains a guide, finding a game by id, stats, and the "Create Game" button
     - Only moderators can create the Hub, but any user in the subreddit can create games
 
 2. **Start Game Creation from the Hub**
@@ -64,9 +64,9 @@ One player can only attempt a game once
    
    - **Background Generation**: Create complex visual noise:
      - Click "Generate Background Shapes" to create a random field of shapes
-     - Each generation creates 50-100 random shapes of various colors and sizes
+     - Each generation creates 50-100 random shapes of various colors and sizes.
      - Generate as many times as needed to achieve desired complexity
-     - Shapes have a little opacity, allowing overlap that ensures two shapes do not combine to form a whole new solid shape
+     - Shapes have a little opacity, allowing overlap that ensures two shapes do not combine to form a whole new solid shape, which may hide the target shape completely, making it impossible to find it.
    
    - **Cleanup and Refinement**:
      - Click "Remove Repeated Shapes" to ensure your target shape is unique
@@ -91,10 +91,10 @@ One player can only attempt a game once
 
 ### Playing Games
 
-1. **Finding Games**
+1. **Exploring Games**
    - Browse the subreddit for Shape Seeker game posts
    - Game posts are tagged with [Shape Seeker] and indicate the target shape
-   - Click on any game post to view details and play
+   - Alternatively, players can "find" a particular game using it's ID by going to the pinned Hub post and clicking the "Find Game by ID" button
 
 2. **Find the Shape**
    - Game posts clearly indicate what to find (e.g., "Find the Blue Square")
@@ -132,7 +132,6 @@ One player can only attempt a game once
      - Whether you found the shape successfully
      - Your reaction time (how quickly you found the shape)
      - Distance from target (if you missed)
-     - Your performance compared to community average
      - A simplified game board that shows where you tapped and where target shape location was
 
 2. **Community Statistics**

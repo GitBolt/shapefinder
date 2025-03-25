@@ -1,6 +1,5 @@
 export class AudioManager {
   constructor() {
-    // Use relative paths that will work in the local environment
     this.sounds = {
       countdown: new Audio('./assets/countdown.mp3'),
       win: new Audio('./assets/win.mp3'),

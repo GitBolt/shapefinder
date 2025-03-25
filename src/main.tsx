@@ -19,7 +19,6 @@ Devvit.addCustomPostType({
   name: 'Shape Seeker Game Hub',
   height: 'tall',
   render: (context) => {
-    // Using Record<string, any> to satisfy the JSONObject constraint
     type GameInfo = {
       username: string;
       title: string;
@@ -30,9 +29,7 @@ Devvit.addCustomPostType({
       guessCount: number;
     };
 
-    // For strongly typed data, we'll use separate variables that get populated from async state
     const [gameInfo] = useState<GameInfo | null>(async () => {
-      // Check if username and post title can be fetched in parallel
       const [username, postInfo] = await Promise.all([
         context.reddit.getCurrentUsername().then(name => name ?? 'anon'),
         context.reddit.getPostById(context.postId ?? '').then(post => ({
@@ -118,7 +115,6 @@ Devvit.addCustomPostType({
       };
     });
     
-    // Extract strongly typed values from the state
     const username = gameInfo?.username ?? 'anon';
     const isHubPost = gameInfo?.isHubPost ?? false;
     const gameData = gameInfo?.gameData ?? null;
@@ -141,7 +137,6 @@ Devvit.addCustomPostType({
 
       // Handle messages sent from the web view
       async onMessage(message, webView) {
-        // Use the extracted message handler
         await handleWebViewMessage(
           message, 
           webView, 
@@ -159,12 +154,10 @@ Devvit.addCustomPostType({
         );
       },
       onUnmount() {
-        // Just show a toast that the game was closed
         context.ui.showToast({ text: 'Game closed' });
       },
     });
 
-    // Determine which view to render based on the post type and game state
     const renderView = () => {
       // Hub post for creating games
       if (isHubPost) {
@@ -173,7 +166,6 @@ Devvit.addCustomPostType({
       
       // If not hub, it must be a game post
       if (gameData && canvasConfig) {
-        // User guess and stats data
         type UserGuessAndStats = {
           userGuess: any;
           stats: {
