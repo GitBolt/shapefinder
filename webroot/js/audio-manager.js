@@ -3,7 +3,8 @@ export class AudioManager {
     this.sounds = {
       countdown: new Audio('./assets/countdown.mp3'),
       win: new Audio('./assets/win.mp3'),
-      lose: new Audio('./assets/lose.mp3')
+      lose: new Audio('./assets/lose.mp3'),
+      popup: new Audio('./assets/popup.mp3')
     };
     
     // Pre-load all sounds
@@ -35,6 +36,12 @@ export class AudioManager {
     this.stopAll();
     this.sounds.lose.currentTime = 0;
     this.sounds.lose.play().catch(e => console.error('Error playing lose sound:', e));
+  }
+  
+  playPopup() {
+    // Don't stop other sounds for this one, just play it alongside
+    this.sounds.popup.currentTime = 0;
+    this.sounds.popup.play().catch(e => console.error('Error playing popup sound:', e));
   }
   
   stopAll() {

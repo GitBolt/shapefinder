@@ -154,6 +154,9 @@ export class EventHandlers {
       false,
       this.game.shapeSize
     );
+    
+    // Restart animation for the background shapes
+    this.renderer.animateParticles();
   }
   
   selectShape(shape) {
@@ -271,6 +274,9 @@ export class EventHandlers {
       return;
     }
     
+    // Play the popup sound for shape generation
+    this.game.audioManager.playPopup();
+    
     // Use the central method to generate background shapes
     this.generateBackgroundShapes();
     
@@ -334,6 +340,9 @@ export class EventHandlers {
       false,
       this.game.shapeSize
     );
+    
+    // Restart animation after removing shapes
+    this.renderer.animateParticles();
     
     // Set repeatedShapesRemoved to true for current shape/color
     this.repeatedShapesRemoved = true;

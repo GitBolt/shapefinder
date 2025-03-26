@@ -67,9 +67,68 @@ export class Renderer {
       cancelAnimationFrame(this.particleAnimation);
     }
     
+    // Animation parameters
+    const delayPerShape = 3; // milliseconds between each shape appearing (reduced from 10ms)
+    const animationDuration = 100; // milliseconds for each shape to fully appear (reduced from 300ms)
+    const startTime = Date.now();
+    
     const animate = () => {
-      // We no longer animate anything in this loop
-      this.particleAnimation = requestAnimationFrame(animate);
+      // If we have canvas config with background shapes, animate them appearing
+      if (this.canvasConfig && this.canvasConfig.backgroundShapes && !this.canvasConfig.animationComplete) {
+        const currentTime = Date.now();
+        let allShapesAnimated = true;
+        
+        // Update each shape's opacity based on its delay time
+        this.canvasConfig.backgroundShapes.forEach(shape => {
+          if (shape.animated) return; // Skip already animated shapes
+          
+          // Calculate when this shape should start appearing
+          const shapeStartTime = startTime + (shape.delayFactor * delayPerShape);
+          
+          // If it's time for this shape to appear
+          if (currentTime >= shapeStartTime) {
+            // Calculate progress of animation (0 to 1)
+            const elapsed = currentTime - shapeStartTime;
+            const progress = Math.min(1, elapsed / animationDuration);
+            
+            // Update opacity based on animation progress
+            shape.opacity = shape.targetOpacity * progress;
+            
+            // Update size for grow effect - start at 20% of final size and grow to 100%
+            const growthFactor = 0.8 * progress + 0.2; // Scale from 0.2 to 1.0
+            shape.currentSize = shape.size * growthFactor;
+            
+            // Mark as animated if complete
+            if (progress >= 1) {
+              shape.opacity = shape.targetOpacity;
+              shape.currentSize = shape.size; // Final size
+              shape.animated = true;
+            } else {
+              allShapesAnimated = false;
+            }
+          } else {
+            allShapesAnimated = false;
+          }
+        });
+        
+        // If all shapes are done animating, mark animation as complete
+        if (allShapesAnimated) {
+          this.canvasConfig.animationComplete = true;
+          console.log('Shape appearance animation complete');
+        }
+        
+        // Redraw the canvas with updated opacities and sizes
+        this.renderShapeSeekerCanvas();
+      }
+      
+      // Continue animation if not complete
+      if (this.canvasConfig && !this.canvasConfig.animationComplete) {
+        this.particleAnimation = requestAnimationFrame(animate);
+      } else {
+        // Animation complete, cancel the animation frame
+        cancelAnimationFrame(this.particleAnimation);
+        this.particleAnimation = null;
+      }
     };
     
     animate();
@@ -107,14 +166,21 @@ export class Renderer {
       
       const opacity = Math.random() * 0.3 + 0.4; // 0.4-0.7 opacity - INCREASED
       
+      // Add appearance animation properties
+      const delayFactor = i; // Each shape appears with a slightly increasing delay
+      
       backgroundShapes.push({
         shapeType,
         color,
         x,
         y,
         size,
-        opacity,
-        layer: 1
+        currentSize: 0, // Start with size 0 for grow effect
+        opacity: 0, // Start invisible
+        targetOpacity: opacity, // Final opacity to reach
+        layer: 1,
+        delayFactor,
+        animated: false // Track if animation is complete
       });
     }
     
@@ -136,14 +202,21 @@ export class Renderer {
       
       const opacity = Math.random() * 0.3 + 0.5; // 0.5-0.8 opacity - INCREASED
       
+      // Add appearance animation properties
+      const delayFactor = layer1Count + i; // Layer 2 starts appearing after layer 1
+      
       backgroundShapes.push({
         shapeType,
         color,
         x,
         y,
         size,
-        opacity,
-        layer: 2
+        currentSize: 0, // Start with size 0 for grow effect
+        opacity: 0, // Start invisible
+        targetOpacity: opacity, // Final opacity to reach
+        layer: 2,
+        delayFactor,
+        animated: false // Track if animation is complete
       });
     }
     
@@ -182,14 +255,21 @@ export class Renderer {
       
       const opacity = Math.random() * 0.2 + 0.8; // 0.8-1.0 opacity - INCREASED
       
+      // Add appearance animation properties
+      const delayFactor = layer1Count + layer2Count + i; // Layer 3 starts appearing after layer 2
+      
       backgroundShapes.push({
         shapeType,
         color,
         x,
         y,
         size,
-        opacity,
-        layer: 3
+        currentSize: 0, // Start with size 0 for grow effect
+        opacity: 0, // Start invisible
+        targetOpacity: opacity, // Final opacity to reach
+        layer: 3,
+        delayFactor,
+        animated: false // Track if animation is complete
       });
     }
     
@@ -200,7 +280,8 @@ export class Renderer {
       width,
       height,
       backgroundShapes,
-      targetShape
+      targetShape,
+      animationComplete: false
     };
   }
   
@@ -249,14 +330,15 @@ export class Renderer {
       return;
     }
     
-    console.log('Rendering Shape Seeker style canvas, game mode:', this.gameMode);
-    console.log('Canvas config has', this.canvasConfig.backgroundShapes.length, 'shapes');
+    // Only log when not in animation loop
+    // console.log('Rendering Shape Seeker style canvas, game mode:', this.gameMode);
+    // console.log('Canvas config has', this.canvasConfig.backgroundShapes.length, 'shapes');
     
     const ctx = this.shapeCloudCtx;
     const width = this.shapeCloudCanvas.width;
     const height = this.shapeCloudCanvas.height;
     
-    console.log('Canvas dimensions:', width, height);
+    // console.log('Canvas dimensions:', width, height);
     
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#f8f9fa';
@@ -278,14 +360,19 @@ export class Renderer {
         shape => shape.layer === layer
       );
       
-      console.log(`Rendering ${shapesForLayer.length} shapes for layer ${layer}`);
+      // Only log when not in animation loop
+      // console.log(`Rendering ${shapesForLayer.length} shapes for layer ${layer}`);
       
       // Draw each shape in this layer
       shapesForLayer.forEach(shape => {
+        // Skip shapes that haven't started appearing yet
+        if (shape.opacity <= 0 || shape.currentSize <= 0) return;
+        
         ctx.globalAlpha = shape.opacity;
         ctx.fillStyle = getColorValue(shape.color);
         
-        this.drawShape(ctx, shape.shapeType, shape.x, shape.y, shape.size);
+        // Use currentSize for grow animation instead of final size
+        this.drawShape(ctx, shape.shapeType, shape.x, shape.y, shape.currentSize || shape.size);
       });
     });
     
@@ -298,7 +385,7 @@ export class Renderer {
       // Only draw the target shape on the background canvas in guesser/results modes
       if (this.gameMode === 'guesser' || this.gameMode === 'results') {
         const target = this.canvasConfig.targetShape;
-        console.log('Drawing target shape:', target);
+        // console.log('Drawing target shape:', target);
         
         // Draw the target shape normally, without any special effects
         ctx.globalAlpha = target.opacity || 0.85;
@@ -342,7 +429,8 @@ export class Renderer {
   }
   
   drawShape(ctx, shape, x, y, size) {
-    console.log(`Drawing shape: ${shape}, at (${x}, ${y}) with size ${size}`);
+    // Only log when not called from animation loop
+    // console.log(`Drawing shape: ${shape}, at (${x}, ${y}) with size ${size}`);
     
     ctx.beginPath();
     
