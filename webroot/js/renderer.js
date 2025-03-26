@@ -292,18 +292,21 @@ export class Renderer {
     // Reset alpha
     ctx.globalAlpha = 1;
     
-    // Always draw the target shape for guesser mode
+    // Draw the target shape for all guesser and results modes
+    // For creator/hub modes, don't draw target on shape cloud canvas (it's drawn on interaction layer instead)
     if (this.canvasConfig.targetShape) {
-      // Always draw the target shape in all modes
-      const target = this.canvasConfig.targetShape;
-      console.log('Drawing target shape:', target);
-      
-      // Draw the target shape normally, without any special effects
-      ctx.globalAlpha = target.opacity || 0.85;
-      ctx.fillStyle = getColorValue(target.color);
-      // Use the target's custom size or default to 30
-      const targetSize = target.size || 30;
-      this.drawShape(ctx, target.shapeType, target.x, target.y, targetSize);
+      // Only draw the target shape on the background canvas in guesser/results modes
+      if (this.gameMode === 'guesser' || this.gameMode === 'results') {
+        const target = this.canvasConfig.targetShape;
+        console.log('Drawing target shape:', target);
+        
+        // Draw the target shape normally, without any special effects
+        ctx.globalAlpha = target.opacity || 0.85;
+        ctx.fillStyle = getColorValue(target.color);
+        // Use the target's custom size or default to 30
+        const targetSize = target.size || 30;
+        this.drawShape(ctx, target.shapeType, target.x, target.y, targetSize);
+      }
     }
   }
   
@@ -618,5 +621,10 @@ export class Renderer {
 
   resumeAnimation() {
     this.isCountingDown = false;
+    
+    // Re-render the canvas with the target shape if we're in guesser mode
+    if (this.gameMode === 'guesser' && this.canvasConfig) {
+      this.renderShapeSeekerCanvas();
+    }
   }
 }

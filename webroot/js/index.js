@@ -189,6 +189,18 @@ class ShapeSeekerGame {
       this.hiddenShape = data.gameData;
       this.guessCount = data.guessCount;
       
+      // Make sure the target shape is properly set in canvas config
+      if (this.canvasConfig) {
+        this.canvasConfig.targetShape = {
+          shapeType: this.hiddenShape.shapeType,
+          color: this.hiddenShape.color,
+          x: this.hiddenShape.x,
+          y: this.hiddenShape.y,
+          opacity: this.hiddenShape.opacity || 0.85,
+          size: this.hiddenShape.size || 30
+        };
+      }
+      
       if (this.isRevealed) {
         this.gameMode = 'results';
         this.renderer.gameMode = 'results'; // Set renderer's game mode

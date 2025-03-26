@@ -51,10 +51,10 @@ export function JoinGameForm({ onBack, onJoinGame, context }: JoinGameFormProps)
           <spacer grow />
           <button
             appearance="secondary"
-            size="large"
+            size="medium"
             onPress={onBack}
           >
-            Close
+            Back
           </button>
         </hstack>
 
