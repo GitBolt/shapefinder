@@ -90,7 +90,7 @@ export class Renderer {
     const colors = ['red', 'green', 'blue', 'purple', 'yellow', 'orange'];
     
     // Create shapes for layer 1 (background)
-    const layer1Count = Math.floor(Math.random() * 20) + 30; // 30-50 shapes
+    const layer1Count = Math.floor(Math.random() * 40) + 60; // 60-100 shapes (doubled from 30-50)
     console.log(`Generating ${layer1Count} layer 1 shapes`);
     
     for (let i = 0; i < layer1Count; i++) {
@@ -119,7 +119,7 @@ export class Renderer {
     }
     
     // Create shapes for layer 2 (mid-layer)
-    const layer2Count = Math.floor(Math.random() * 15) + 15; // 15-30 shapes
+    const layer2Count = Math.floor(Math.random() * 30) + 30; // 30-60 shapes (doubled from 15-30)
     console.log(`Generating ${layer2Count} layer 2 shapes`);
     
     for (let i = 0; i < layer2Count; i++) {
@@ -148,7 +148,7 @@ export class Renderer {
     }
     
     // Create shapes for layer 3 (foreground) - fewer shapes with higher opacity
-    const layer3Count = Math.floor(Math.random() * 10) + 10; // 10-20 shapes
+    const layer3Count = Math.floor(Math.random() * 20) + 20; // 20-40 shapes (doubled from 10-20)
     console.log(`Generating ${layer3Count} layer 3 shapes`);
     
     for (let i = 0; i < layer3Count; i++) {
